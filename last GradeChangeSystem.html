@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Grade Change System — PP Plant</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;min-height:100vh}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(135deg,#e8f0f7,#f0ece8);background-attachment:fixed;color:#1a1a18;font-size:14px}
+.topbar{background:rgba(255,255,255,.93);backdrop-filter:blur(10px);border-bottom:1px solid rgba(0,0,0,.08);padding:10px 14px;display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:99;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.logo{width:34px;height:34px;background:linear-gradient(135deg,#185FA5,#2b7fc4);border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:12px;flex-shrink:0}
+.navs{display:flex;gap:2px;background:rgba(0,0,0,.06);padding:3px;border-radius:9px;margin-left:auto;overflow-x:auto}
+.nb{padding:6px 12px;font-size:12px;border-radius:7px;border:none;background:transparent;font-weight:500;color:#6b6b67;cursor:pointer;white-space:nowrap;font-family:inherit}
+.nb.on{background:#fff;font-weight:800;color:#185FA5;box-shadow:0 1px 6px rgba(0,0,0,.1)}
+.page{display:none;padding:14px;width:100%}
+.page.on{display:block}
+.card{background:rgba(255,255,255,.88);border-radius:13px;border:1px solid rgba(255,255,255,.7);padding:14px 18px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+.ct{font-weight:800;font-size:12px;color:#777;margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em}
+.pbar{height:8px;background:rgba(0,0,0,.07);border-radius:4px;overflow:hidden;margin-bottom:4px}
+/* LOGIN */
+#login-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#e8f0f7,#f0ece8);display:flex;align-items:center;justify-content:center;z-index:999;padding:20px}
+.login-box{background:#fff;border-radius:18px;padding:36px 28px;max-width:380px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,.12);text-align:center}
+.login-role-btn{padding:18px 10px;border-radius:12px;cursor:pointer;font-family:inherit;border:2px solid transparent;width:100%;background:transparent;transition:background .2s}
+/* START */
+.start-box{background:rgba(24,95,165,.04);border:1.5px dashed rgba(24,95,165,.3);border-radius:14px;padding:40px 20px;text-align:center;margin-bottom:12px}
+.start-icon{width:76px;height:76px;background:linear-gradient(135deg,#185FA5,#2b7fc4);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:30px;color:#fff}
+.btn-start{background:linear-gradient(135deg,#185FA5,#2b7fc4);color:#fff;border:none;border-radius:12px;padding:15px 40px;font-weight:900;font-size:16px;cursor:pointer;font-family:inherit;box-shadow:0 6px 18px rgba(24,95,165,.38)}
+.done-banner{background:rgba(59,109,17,.06);border:1.5px solid rgba(59,109,17,.28);border-radius:14px;padding:30px 20px;text-align:center;margin-bottom:12px}
+.done-icon{width:68px;height:68px;background:linear-gradient(135deg,#3B6D11,#5a9a1a);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:28px;color:#fff}
+.el-bar{background:rgba(24,95,165,.07);border:1px solid rgba(24,95,165,.18);border-radius:11px;padding:10px 16px;margin-bottom:12px;display:flex;align-items:center;gap:14px}
+.el-val{font-family:monospace;font-weight:900;font-size:20px;color:#185FA5}
+/* STEPS */
+.stbl{width:100%;border-collapse:collapse}
+.stbl tr{border-bottom:1px solid rgba(0,0,0,.06)}
+.stbl tr.sd{background:rgba(192,221,151,.1)}
+.stbl tr.sa{background:rgba(250,199,117,.09)}
+.sn{width:36px;text-align:center;vertical-align:top;padding:11px 4px;font-family:monospace;font-weight:900;font-size:13px;color:#bbb;border-left:4px solid rgba(0,0,0,.08)}
+.sc{padding:11px 13px;vertical-align:top}
+.stamp{font-size:11px;color:#3B6D11;background:rgba(192,221,151,.35);padding:3px 8px;border-radius:5px;display:inline-block;margin-top:4px}
+/* BUTTONS */
+.bb{background:linear-gradient(135deg,#185FA5,#2b7fc4);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit}
+.bg{background:linear-gradient(135deg,#3B6D11,#5a9a1a);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit}
+.bx{background:rgba(0,0,0,.05);color:#6b6b67;border:1px solid rgba(0,0,0,.12);border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:inherit}
+.bc{background:rgba(234,243,222,.9);color:#3B6D11;border:1px solid rgba(59,109,17,.28);border-radius:8px;padding:8px 16px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;text-align:center;line-height:1.4}
+.bc small{display:block;font-size:10px;color:#4a8a22;font-weight:500}
+.bdel{background:rgba(252,235,235,.9);color:#A32D2D;border:1px solid rgba(247,193,193,.7);border-radius:7px;padding:4px 9px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit}
+.bedit{background:rgba(230,241,251,.9);color:#185FA5;border:1px solid rgba(24,95,165,.25);border-radius:7px;padding:4px 9px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit}
+/* QUALITY BARS */
+.qw{margin-bottom:13px}
+.qbar{position:relative;height:10px;background:rgba(0,0,0,.07);border-radius:5px;overflow:hidden;margin-bottom:3px}
+.qband{position:absolute;height:100%;background:#C0DD97;opacity:.55}
+.qtgt{position:absolute;width:2px;height:100%;background:#3B6D11;opacity:.7}
+.qdot{position:absolute;top:-1px;width:12px;height:12px;border-radius:50%;border:2.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.spec-box{background:rgba(255,255,255,.7);border-radius:9px;padding:10px 13px;border-left:4px solid #ddd}
+/* SAMPLES */
+.sm-tbl{width:100%;font-size:12px;border-collapse:collapse}
+.sm-tbl th{padding:4px 6px;color:#777;font-weight:600;border-bottom:1px solid rgba(0,0,0,.08);text-align:right;font-size:11px}
+.sm-tbl th:first-child{text-align:left}
+.sm-tbl td{padding:5px 6px;border-bottom:1px solid rgba(0,0,0,.05);font-family:monospace}
+.sm-tbl td:not(:first-child){text-align:right}
+.ok{color:#3B6D11;font-weight:700}.bad{color:#E24B4A;font-weight:700}
+.pill{font-size:11px;padding:2px 8px;border-radius:5px;font-weight:700}
+.pill.done{background:rgba(192,221,151,.4);color:#3B6D11}
+.pill.act{background:rgba(250,199,117,.35);color:#854F0B}
+.pill.pend{background:rgba(0,0,0,.05);color:#777}
+/* ENGINEER */
+.ti{background:rgba(255,255,255,.88);border-radius:11px;border:1px solid rgba(0,0,0,.08);padding:13px 15px;margin-bottom:9px}
+.ti.open{border-color:rgba(24,95,165,.3);border-width:1.5px}
+.ti-arrow{width:30px;height:30px;border-radius:7px;background:rgba(0,0,0,.06);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;flex-shrink:0}
+.ti.open .ti-arrow{background:linear-gradient(135deg,#185FA5,#2b7fc4);color:#fff}
+.eng-row{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06)}
+.ep{background:rgba(192,221,151,.12);border:1.5px solid rgba(192,221,151,.5);border-radius:9px;padding:13px;margin:4px 0 8px}
+.pb-box{background:rgba(192,221,151,.15);border:1px solid rgba(192,221,151,.4);border-radius:9px;padding:12px;margin-bottom:12px}
+/* FORMS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.fld label{display:block;font-size:11px;color:#777;margin-bottom:3px;font-weight:600}
+.fld input,.fld select,.fld textarea{width:100%;border:1px solid rgba(0,0,0,.13);border-radius:7px;padding:7px 9px;font-size:13px;font-family:inherit;background:rgba(255,255,255,.85)}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:#185FA5;box-shadow:0 0 0 3px rgba(24,95,165,.1)}
+.fld textarea{resize:vertical}
+.fx{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sel{border:1px solid rgba(0,0,0,.13);border-radius:8px;padding:6px 10px;font-size:13px;font-family:inherit;background:rgba(255,255,255,.85)}
+.mon{font-family:monospace}
+.hidden{display:none}
+.nt-form{background:rgba(245,243,239,.85);border-radius:11px;padding:16px;margin-bottom:13px;border:1px solid rgba(0,0,0,.08)}
+/* WORKBOOKS */
+.wb-sec{border:1px solid rgba(0,0,0,.08);border-radius:9px;margin-bottom:7px;overflow:hidden}
+.wb-sec-hdr{display:flex;align-items:center;gap:8px;padding:9px 13px;cursor:pointer;background:rgba(0,0,0,.02);user-select:none}
+.wb-tbl{width:100%;font-size:12px;border-collapse:collapse;min-width:480px}
+.wb-tbl th{text-align:left;padding:5px 7px;color:#777;font-weight:600;font-size:11px;border-bottom:1px solid rgba(0,0,0,.08);background:rgba(0,0,0,.03)}
+.wb-tbl td{padding:6px 7px;border-bottom:1px solid rgba(0,0,0,.05)}
+@media print{
+  body{background:#fff!important}
+  .topbar,#login-screen,.bb,.bg,.bx,.bdel,.bedit,.btn-start,#sf,.wb-sec-hdr button{display:none!important}
+  .page{display:block!important;padding:0}
+  .card{box-shadow:none;border:1px solid #ddd;background:#fff}
+}
+</style>
+  <!-- Firebase Realtime Database SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div style="width:60px;height:60px;background:linear-gradient(135deg,#185FA5,#2b7fc4);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:22px;color:#fff;font-weight:900">GC</div>
+    <div style="font-size:21px;font-weight:900;margin-bottom:4px">Grade Change System</div>
+    <div style="font-size:13px;color:#777;margin-bottom:26px">PP Plant</div>
+    <div class="g2" style="margin-bottom:0">
+      <button class="login-role-btn" onclick="showOpLogin()" style="background:rgba(24,95,165,.08);border-color:rgba(24,95,165,.2)">
+        <div style="font-size:26px;margin-bottom:6px">&#128084;</div>
+        <div style="font-weight:800;font-size:13px;color:#185FA5">Operator</div>
+        <div style="font-size:11px;color:#777;margin-top:2px">View &amp; confirm steps</div>
+      </button>
+      <button class="login-role-btn" onclick="showPELogin()" style="background:rgba(59,109,17,.08);border-color:rgba(59,109,17,.2)">
+        <div style="font-size:26px;margin-bottom:6px">&#128736;</div>
+        <div style="font-weight:800;font-size:13px;color:#3B6D11">Process Engineer</div>
+        <div style="font-size:11px;color:#777;margin-top:2px">Full access + edit</div>
+      </button>
+    </div>
+    <!-- Operator name form -->
+    <div id="op-login-form" style="display:none;border-top:1px solid rgba(0,0,0,.08);margin-top:16px;padding-top:16px">
+      <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">Enter your name</div>
+      <input id="op-name" type="text" placeholder="e.g. A. Mammadov" onkeydown="if(event.key==='Enter')loginOp()" style="width:100%;border:1px solid rgba(0,0,0,.13);border-radius:9px;padding:10px 14px;font-size:14px;font-family:inherit;margin-bottom:10px">
+      <div id="op-err" style="font-size:12px;color:#E24B4A;margin-bottom:8px;display:none">Please enter your name.</div>
+      <div class="fx">
+        <button onclick="loginOp()" style="flex:1;padding:10px;background:linear-gradient(135deg,#185FA5,#2b7fc4);color:#fff;border:none;border-radius:9px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">Login</button>
+        <button onclick="hideOpLogin()" style="padding:10px 14px;background:rgba(0,0,0,.05);color:#555;border:1px solid rgba(0,0,0,.12);border-radius:9px;font-size:13px;cursor:pointer;font-family:inherit">Cancel</button>
+      </div>
+    </div>
+    <!-- PE password form -->
+    <div id="pe-login-form" style="display:none;border-top:1px solid rgba(0,0,0,.08);margin-top:16px;padding-top:16px">
+      <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">Process Engineer Password</div>
+      <input id="pe-pwd" type="password" placeholder="Password..." onkeydown="if(event.key==='Enter')loginPE()" style="width:100%;border:1px solid rgba(0,0,0,.13);border-radius:9px;padding:10px 14px;font-size:14px;font-family:inherit;margin-bottom:10px">
+      <div id="pe-err" style="font-size:12px;color:#E24B4A;margin-bottom:8px;display:none">Incorrect password.</div>
+      <div class="fx">
+        <button onclick="loginPE()" style="flex:1;padding:10px;background:linear-gradient(135deg,#3B6D11,#5a9a1a);color:#fff;border:none;border-radius:9px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">Login</button>
+        <button onclick="hidePELogin()" style="padding:10px 14px;background:rgba(0,0,0,.05);color:#555;border:1px solid rgba(0,0,0,.12);border-radius:9px;font-size:13px;cursor:pointer;font-family:inherit">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">GC</div>
+  <div style="line-height:1.2"><div style="font-weight:900;font-size:13px">Grade Change</div><div style="font-size:10px;color:#888">PP Plant</div></div>
+  <span id="sync-indicator" onclick="showSyncSetup()" title="Sync status - click to configure" style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;background:rgba(0,0,0,.06);color:#9b9b97;border:1px solid rgba(0,0,0,.1);cursor:pointer;white-space:nowrap">Sync: Setup needed</span>
+  <span id="role-badge" style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px;background:rgba(24,95,165,.12);color:#185FA5;white-space:nowrap">Operator</span>
+  <div class="navs">
+    <button class="nb on" onclick="goTo('op',this)">Operator</button>
+    <button class="nb" onclick="goTo('dash',this)">Dashboard</button>
+    <button class="nb" id="eng-nav-btn" onclick="goTo('eng',this)" style="display:none">Engineer</button>
+    <button class="nb" onclick="goTo('wb',this)">Workbooks</button>
+  </div>
+  <div class="fx" style="flex-shrink:0;margin-left:4px;gap:5px">
+    <button onclick="doPDF()" style="background:rgba(24,95,165,.1);color:#185FA5;border:1px solid rgba(24,95,165,.25);border-radius:7px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">&#128247; PDF</button>
+    <button onclick="doShare()" style="background:rgba(59,109,17,.1);color:#3B6D11;border:1px solid rgba(59,109,17,.25);border-radius:7px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">&#8679; Share</button>
+    <button id="logout-btn" onclick="logout()" style="background:rgba(0,0,0,.06);color:#555;border:1px solid rgba(0,0,0,.12);border-radius:7px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">&#8617; Exit</button>
+  </div>
+</div>
+
+<div id="op" class="page on"></div>
+<div id="dash" class="page"></div>
+<div id="eng" class="page"></div>
+<div id="wb" class="page"></div>
+
+<script>
+/* ============================================================
+   FIREBASE SYNC CONFIG
+   ─────────────────────────────────────────────────────────────
+   HOW TO ENABLE REAL-TIME SYNC:
+   1. Go to https://console.firebase.google.com
+   2. Create a project → Add Web App
+   3. Enable Realtime Database (test mode)
+   4. Copy your config values below
+   5. All tablets on the same network will auto-sync!
+   ============================================================ */
+var FIREBASE_CONFIG = {
+  apiKey:            "",   /* ← paste your apiKey here */
+  authDomain:        "",
+  databaseURL:       "",   /* ← paste your databaseURL here (required) */
+  projectId:         "",
+  storageBucket:     "",
+  messagingSenderId: "",
+  appId:             ""
+};
+
+var DB = null;          /* Firebase db reference */
+var SYNC_ON = false;    /* true when Firebase is connected */
+var SYNC_REF = null;    /* db path reference */
+var SYNC_PLANT = "pp-plant-1"; /* change per plant/site if needed */
+
+function initFirebase(){
+  if(!FIREBASE_CONFIG.databaseURL){ updateSyncUI("not-configured"); return; }
+  try {
+    if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    DB = firebase.database();
+    SYNC_REF = DB.ref(SYNC_PLANT);
+    /* Listen for remote changes */
+    SYNC_REF.on("value", function(snap){
+      var data = snap.val();
+      if(!data) { pushToFirebase(); return; } /* first time - push local data */
+      /* Update local state from remote */
+      if(data.TRANS) TRANS = data.TRANS;
+      if(data.WB) WB = data.WB;
+      /* Re-init ST/CDR/SMP for any new transitions */
+      TRANS.forEach(function(t,i){
+        if(!ST[i])  ST[i]  = t.steps.map(function(){return"p";});
+        if(!CDR[i]) CDR[i] = {};
+        if(!SMP[i]) SMP[i] = [];
+        if(STARTED[i]===undefined) STARTED[i]=null;
+        if(DUR[i]===undefined) DUR[i]=null;
+      });
+      SYNC_ON = true;
+      updateSyncUI("connected");
+      /* Refresh current view */
+      var activePage = document.querySelector(".page.on");
+      if(activePage){
+        var id = activePage.id;
+        if(id==="eng") renderEng();
+        else if(id==="wb") renderWB();
+        else if(id==="dash") renderDash();
+      }
+    }, function(err){
+      SYNC_ON = false;
+      updateSyncUI("error");
+    });
+    updateSyncUI("connecting");
+  } catch(e){
+    updateSyncUI("error");
+    console.warn("Firebase init error:", e.message);
+  }
+}
+
+function pushToFirebase(){
+  if(!DB || !SYNC_REF) return;
+  SYNC_REF.set({ TRANS: TRANS, WB: WB, updatedBy: OP, updatedAt: Date.now() })
+    .then(function(){ updateSyncUI("synced"); })
+    .catch(function(){ updateSyncUI("error"); });
+}
+
+/* Call this after any PE change to TRANS or WB */
+function syncIfPE(){
+  if(ROLE==="pe" && DB) pushToFirebase();
+}
+
+function updateSyncUI(state){
+  var el = document.getElementById("sync-indicator");
+  if(!el) return;
+  var states = {
+    "not-configured": { text:"Sync: Setup needed", col:"#9b9b97", bg:"rgba(0,0,0,.06)" },
+    "connecting":     { text:"Sync: Connecting…",  col:"#854F0B", bg:"rgba(250,238,218,.9)" },
+    "connected":      { text:"Sync: Connected ✓",  col:"#3B6D11", bg:"rgba(192,221,151,.3)" },
+    "synced":         { text:"Sync: Saved ✓",       col:"#3B6D11", bg:"rgba(192,221,151,.3)" },
+    "error":          { text:"Sync: Offline",        col:"#E24B4A", bg:"rgba(252,235,235,.9)" }
+  };
+  var s = states[state] || states["not-configured"];
+  el.textContent = s.text;
+  el.style.color = s.col;
+  el.style.background = s.bg;
+  el.style.borderColor = s.col + "40";
+}
+
+/* ============================================================
+   AUTH
+   ============================================================ */
+var ROLE = null;
+var PE_PASSWORD = "pe1234";
+
+function showOpLogin(){
+  document.getElementById("op-login-form").style.display="block";
+  document.getElementById("pe-login-form").style.display="none";
+  document.getElementById("op-name").value="";
+  document.getElementById("op-err").style.display="none";
+  setTimeout(function(){document.getElementById("op-name").focus();},50);
+}
+function hideOpLogin(){document.getElementById("op-login-form").style.display="none";}
+function loginOp(){
+  var n=document.getElementById("op-name").value.trim();
+  if(!n){document.getElementById("op-err").style.display="block";return;}
+  loginAs("operator",n);
+}
+function showPELogin(){
+  document.getElementById("pe-login-form").style.display="block";
+  document.getElementById("op-login-form").style.display="none";
+  document.getElementById("pe-pwd").value="";
+  document.getElementById("pe-err").style.display="none";
+  setTimeout(function(){document.getElementById("pe-pwd").focus();},50);
+}
+function hidePELogin(){document.getElementById("pe-login-form").style.display="none";document.getElementById("pe-pwd").value="";}
+function loginPE(){
+  var pwd=document.getElementById("pe-pwd").value;
+  if(pwd===PE_PASSWORD){
+    hidePELogin();
+    var n=prompt("Enter your name:","Process Engineer");
+    loginAs("pe",n||"Process Engineer");
+  } else {
+    document.getElementById("pe-err").style.display="block";
+    document.getElementById("pe-pwd").value="";
+    setTimeout(function(){document.getElementById("pe-pwd").focus();},50);
+  }
+}
+function loginAs(role,name){
+  ROLE=role; if(name)OP=name;
+  document.getElementById("login-screen").style.display="none";
+  updateNavForRole();
+  renderOp();
+}
+function logout(){
+  ROLE=null; OP="Operator";
+  document.getElementById("login-screen").style.display="flex";
+  hideOpLogin(); hidePELogin();
+  document.querySelectorAll(".page").forEach(function(el){el.classList.remove("on");});
+  document.querySelectorAll(".nb").forEach(function(el){el.classList.remove("on");});
+  document.getElementById("op").classList.add("on");
+  document.querySelector(".nb").classList.add("on");
+}
+function updateNavForRole(){
+  var e=document.getElementById("eng-nav-btn");
+  if(e) e.style.display=ROLE==="pe"?"inline-block":"none";
+  var rb=document.getElementById("role-badge");
+  if(rb){rb.textContent=ROLE==="pe"?"Process Engineer":"Operator";rb.style.background=ROLE==="pe"?"rgba(59,109,17,.12)":"rgba(24,95,165,.12)";rb.style.color=ROLE==="pe"?"#3B6D11":"#185FA5";}
+  var lb=document.getElementById("logout-btn");
+  if(lb) lb.textContent=(ROLE==="pe"?"PE":"Op")+": "+OP+" ↷";
+}
+
+/* ============================================================
+   DATA
+   ============================================================ */
+var TRANS=[
+  {id:"t1",from:"HB0256FR",to:"HB0356FR",type:"HOMO-HOMO",ver:"v1.0",status:"Approved",
+   mfrLo:2.5,mfrHi:3.4,mfrT:2.9,mfrBl:2.8,mfrBh:3.0,xsLo:3.6,xsHi:4.0,xsT:3.8,xsBl:3.7,xsBh:3.9,c2Lo:null,c2Hi:null,c2T:null,add:"Same as HB0256FR",
+   steps:[
+    {id:"a1",title:"Increase H2 - 1st Loop",instr:"Increase hydrogen flow to 1st loop to 860 ppm. Enter new setpoint in DCS and confirm flow indicator is responding.",dcs:"AIC-22001",tgt:"860 ppm",trigger:"(V-2803A + V-2901B) ~380 tons",mins:null,role:"Operator"},
+    {id:"a2",title:"Increase H2 - 2nd Loop",instr:"40 min after Step 1: Increase hydrogen flow to 2nd loop to 860 ppm.",dcs:"AIC-22002",tgt:"860 ppm",trigger:"40 min after Step 1",mins:40,role:"Operator"},
+    {id:"a3",title:"Divert Powder Silo to V-2803B",instr:"Divert powder discharge from V-2803A to V-2803B. Confirm diversion valve position is correct.",dcs:"XV-2803",tgt:"V-2803B position",trigger:"1h 20min after Step 2",mins:80,role:"Operator"},
+    {id:"a4",title:"Sampling - Powder and Pellet MFR",instr:"Collect powder and pellet samples for MFR analysis. Submit to lab. Repeat every 2 hours.",dcs:null,tgt:"MFR 2.5-3.4 g/10min",trigger:"Every 2 hours",mins:120,role:"Operator/Lab"},
+    {id:"a5",title:"Start Extrusion - V-2803B",instr:"V-2803A is finished. Start extruder feed from V-2803B. Confirm extruder is running.",dcs:"EX-2803",tgt:"Running state",trigger:"V-2803A empty",mins:null,role:"Operator"},
+    {id:"a6",title:"Divert Pellet Silo - Collect as HB0356FR",instr:"Online pellet MFR reached threshold. Divert pellet stream to empty silo. Start collecting as HB0356FR.",dcs:"XV-2901",tgt:"> 2.4 g/10min",trigger:"Pellet MFR > 2.4 g/10min",mins:null,role:"Operator"},
+    {id:"a7",title:"Additivation Confirmation",instr:"Additivation recipe is the same as HB0256FR. No changes required.",dcs:null,tgt:"Same as HB0256FR",trigger:"Informational",mins:null,role:"Supervisor"},
+    {id:"a8",title:"Monitor Pellet MFR - Stabilisation",instr:"Monitor pellet MFR. Adjust H2 on AIC-22001/02 to maintain within band 2.8-3.0.",dcs:"AIC-22001/02",tgt:"2.5-3.4 / tgt 2.9",trigger:"Continuous until stable",mins:null,role:"Operator"},
+    {id:"a9",title:"Monitor XS - Stabilisation",instr:"Monitor XS. Maintain within 3.6-4.0%.",dcs:null,tgt:"3.6-4.0% / tgt 3.8%",trigger:"Continuous until stable",mins:null,role:"Operator"}
+   ]},
+  {id:"t2",from:"CA0900BM",to:"HB0256FR",type:"RACO-HOMO",ver:"v1.0",status:"Approved",
+   mfrLo:1.5,mfrHi:2.4,mfrT:1.8,mfrBl:1.7,mfrBh:1.9,xsLo:3.5,xsHi:3.9,xsT:3.7,xsBl:3.6,xsBh:3.8,c2Lo:null,c2Hi:null,c2T:null,add:"CBA-3 then CBA-5",
+   steps:[
+    {id:"b1",title:"Switch Donor: D to C-donor",instr:"Total powder+pellet ~330 tons (~19:30). Stop P-2104-B, start P-2104-A. Set T/D=50. Change HIC-21027 from 45.1% to 7%.",dcs:"HIC-21027/P-2104",tgt:"T/D=50, HIC-21027 to 7%",trigger:"~330 tons (~19:30)",mins:null,role:"Operator"},
+    {id:"b2",title:"C-donor Arrival - Adjust H2",instr:"C-donor reaches loops (~20:00). Decrease catalyst stroke. Set AIC-22001 = 680 ppm. Increase T/D to 110.",dcs:"AIC-22001",tgt:"680 ppm, T/D=110",trigger:"~20:00",mins:null,role:"Operator"},
+    {id:"b3",title:"Decrease H2 - 2nd Loop",instr:"40 min after Step 2 (~20:40): Set AIC-22002 = 680 ppm.",dcs:"AIC-22002",tgt:"680 ppm",trigger:"40 min after Step 2",mins:40,role:"Operator"},
+    {id:"b4",title:"Divert Powder and Shut Area 2400",instr:"20 min after Step 3 (~21:00): Divert powder to F-2301. Shut area 2400 per SOP. Switch HS-23005A: HECO to HOMO.",dcs:"HS-23005A",tgt:"HECO to HOMO",trigger:"20 min after Step 3",mins:20,role:"Operator"},
+    {id:"b5",title:"Regulate per Grade Working Book",instr:"Regulate all process conditions as per the Grade Working Book of HB0256FR.",dcs:null,tgt:"Per Grade Working Book",trigger:"With Step 4",mins:null,role:"Operator"},
+    {id:"b6",title:"Divert Powder Silo to V-2809",instr:"20 min after Step 4 (~21:20): divert powder silo to V-2809.",dcs:null,tgt:"Powder to V-2809",trigger:"20 min after Step 4",mins:20,role:"Operator"},
+    {id:"b7",title:"Quality Gate - Divert to V-2803-A",instr:"Once powder MFR 1.5-2.4 AND C2 bonded < 0.8%: divert powder silo to V-2803-A.",dcs:null,tgt:"MFR 1.5-2.4 and C2 < 0.8%",trigger:"Quality OK",mins:null,role:"Operator/Lab"},
+    {id:"b8",title:"V-2803-B Done: Extrude V-2809 CBA-3",instr:"V-2803-B finished. Start extrusion of V-2809 with CBA-3 at 1400 ppm. Divert pellets to V-2901-A.",dcs:null,tgt:"CBA-3 @ 1400 ppm",trigger:"V-2803-B empty",mins:null,role:"Operator"},
+    {id:"b9",title:"V-2809 Done: Extrude V-2803-A HB0256FR",instr:"V-2809 finished. Start extrusion of V-2803-A. Change to CBA-5 at 1575 ppm. Collect as HB0256FR.",dcs:null,tgt:"CBA-5 @ 1575 ppm",trigger:"V-2809 empty",mins:null,role:"Operator"},
+    {id:"b10",title:"Monitor Pellet MFR - Target 1.8",instr:"Maintain pellet MFR 1.5-2.4 g/10min. Target 1.8. Adjust H2.",dcs:"AIC-22001/02",tgt:"1.5-2.4 / tgt 1.8",trigger:"Continuous",mins:null,role:"Operator"},
+    {id:"b11",title:"Monitor XS - Target 3.7%",instr:"Maintain XS 3.5-3.9%. Target 3.7%. Adjust T/D.",dcs:null,tgt:"3.5-3.9%",trigger:"Continuous",mins:null,role:"Operator"}
+   ]},
+  {id:"t3",from:"HB0256FR",to:"CA0900BM",type:"HOMO-RACO",ver:"v1.0",status:"Approved",
+   mfrLo:0.8,mfrHi:1.1,mfrT:0.9,mfrBl:0.85,mfrBh:0.95,xsLo:16.5,xsHi:18.5,xsT:17.5,xsBl:17.0,xsBh:18.0,c2Lo:8.5,c2Hi:10.0,c2T:9.5,add:"CBA-5 (2000 ppm)",
+   steps:[
+    {id:"c1",title:"Decrease Loop Temperatures",instr:"At 19:00, decrease loop reactor temps to 70C. 1st loop density to 527 kg/m3, 2nd loop to 560 kg/m3.",dcs:"TC-Loop / DC-Loop",tgt:"70C, 527/560 kg/m3",trigger:"~19:00",mins:null,role:"Operator"},
+    {id:"c2",title:"Increase H2 - 1st Loop (820 ppm)",instr:"When inventory ~350 tons (~19:30): set AIC-22001 = 820 ppm.",dcs:"AIC-22001",tgt:"820 ppm",trigger:"~350 tons (~19:30)",mins:null,role:"Operator"},
+    {id:"c3",title:"Increase H2 - 2nd Loop (820 ppm)",instr:"40 min later (~20:10): set AIC-22002 = 820 ppm.",dcs:"AIC-22002",tgt:"820 ppm",trigger:"40 min after Step 2",mins:40,role:"Operator"},
+    {id:"c4",title:"Start E/P Flows to GPR",instr:"20 min later (~20:30): Put ethylene/propylene flows to GPR in AUTO and start increasing.",dcs:"GPR E/P ctrl",tgt:"AUTO mode",trigger:"20 min after Step 3",mins:20,role:"Operator"},
+    {id:"c5",title:"Increase GPR Level to Target",instr:"Increase GPR level (LIC-24001 60-65%). Continue until ethylene reaches ~1750-1800 kg/h.",dcs:"LIC-24001",tgt:"60-65%, C2 ~1750-1800 kg/h",trigger:"With Step 4",mins:null,role:"Operator"},
+    {id:"c6",title:"Set RACO Coefficient",instr:"Set homopolymer production coefficient to 1.1. Set ethylene advanced control to 10.8%.",dcs:null,tgt:"Coeff=1.1, C2 adv=10.8%",trigger:"After stabilisation",mins:null,role:"Operator"},
+    {id:"c7",title:"Divert Powder Silo to V-2809",instr:"20 min after Step 4 (~20:50): divert powder silo to V-2809.",dcs:null,tgt:"Powder to V-2809",trigger:"20 min after Step 4",mins:20,role:"Operator"},
+    {id:"c8",title:"Monitor C2 Ratios",instr:"Keep C2/(C2+C3) 0.37-0.39 and H2/C2 0.022-0.024.",dcs:"GPR analyser",tgt:"C2/(C2+C3): 0.37-0.39",trigger:"Continuous from Step 4",mins:null,role:"Operator"},
+    {id:"c9",title:"Quality Gate - Divert to V-2803-B",instr:"Powder MFR 0.8-1.1 AND C2 bonded > 8.5%: divert powder silo to V-2803-B.",dcs:null,tgt:"MFR 0.8-1.1 and C2 > 8.5%",trigger:"Quality OK",mins:null,role:"Operator/Lab"},
+    {id:"c10",title:"V-2803-A Done: Extrude V-2809 CBA-3",instr:"V-2803-A finished. Extrude V-2809 to V-2901-A with CBA-3 (1400 ppm).",dcs:null,tgt:"CBA-3 @ 1400 ppm",trigger:"V-2803-A empty",mins:null,role:"Operator"},
+    {id:"c11",title:"V-2809 Done: Extrude V-2803-B",instr:"V-2809 finished. Start extrusion of V-2803-B.",dcs:null,tgt:"V-2803-B running",trigger:"V-2809 empty",mins:null,role:"Operator"},
+    {id:"c12",title:"Collect as CA0900BM",instr:"Pellet MFR > 0.8: change to CBA-5 (2000 ppm). Divert pellet silo. Collect as CA0900BM.",dcs:null,tgt:"CBA-5 @ 2000 ppm",trigger:"Pellet MFR > 0.8",mins:null,role:"Operator"},
+    {id:"c13",title:"Adjust Loop Conditions for GPR",instr:"Adjust temperature and density per CA0900BM Grade Workbook.",dcs:"TC-Loop / DC-Loop",tgt:"Per CA0900BM WB",trigger:"Continuous",mins:null,role:"Operator"},
+    {id:"c14",title:"Monitor Powder MFR",instr:"D-2301: 1.2-1.4. M-2501: target 0.9 (band 0.85-0.95). Adjust H2.",dcs:"AIC-Loop",tgt:"D-2301: 1.2-1.4 | M-2501: tgt 0.9",trigger:"Continuous",mins:null,role:"Operator"},
+    {id:"c15",title:"Monitor C2 Bonded and TXS",instr:"C2 bonded: 8.5-10% (tgt 9.5%). TXS: 16.5-18.5 (tgt 17.5).",dcs:null,tgt:"C2: 8.5-10% | TXS: 16.5-18.5",trigger:"Continuous",mins:null,role:"Operator"}
+   ]}
+];
+
+var ST={};var CDR={};var SMP={};var STARTED={};var DUR={};
+var ELOG=[];var SUP="K. Aliyev";var OP="Operator";var ATID=0;
+var ELI=null;var PAUSED=false;
+var ENG_OPEN=-1;var ENG_PASTE=-1;var ENG_EDIT_STEP=null;var ENG_SHOW_NEW=false;
+var WB_OPEN={};var WB_EDIT=null;var WB_NEW_ROW=null;var WB_SHOW_NEW=false;
+
+TRANS.forEach(function(t,i){
+  ST[i]=t.steps.map(function(){return"p";});
+  CDR[i]={};SMP[i]=[];STARTED[i]=null;DUR[i]=null;
+});
+
+var WB=[{
+  grade:"HB0356FR",family:"HOMO",rev:"C00",status:"Approved",doc:"SP-003-PK-001-05",
+  description:"Polypropylene homopolymer for extrusion and thermoforming. Broad molecular weight distribution with low water carry-over additive package. Applications: monofilaments, ropes and tapes.",
+  application:"Raffia, Tapes, Strapping",market:"Textile, Flexible Packaging",
+  features:"Low Water Carry Over, Non-Phthalate, Homopolymer",
+  catalyst:"ZN 180 2M",cocatalyst:"TEAL",donor:"C-DONOR",
+  secs:[
+    {id:"ps",title:"Product Specification",color:"#185FA5",rows:[
+      {p:"MFR (230\xb0C/2.16kg)",u:"g/10 min",mn:"2.5",tg:"-",mx:"3.4",m:"ISO 1133-1"},
+      {p:"Flexural Modulus",u:"MPa",mn:"1450",tg:"-",mx:"-",m:"ISO 178"},
+      {p:"Tensile Strength at Yield",u:"MPa",mn:"30",tg:"-",mx:"-",m:"ISO 527"},
+      {p:"Elongation at Yield",u:"%",mn:"9",tg:"-",mx:"-",m:"ISO 527"}
+    ]},
+    {id:"isp",title:"Internal Spec - Powder from Dryer",color:"#534AB7",rows:[
+      {p:"MFR (2.16kg/230\xb0C)",u:"g/10 min",mn:"2.8",tg:"2.9",mx:"3.0",m:"SP-026-PR-016"},
+      {p:"Xylene Solubles (XS)",u:"wt%",mn:"3.6",tg:"3.8",mx:"4.0",m:"SP-026-PR-015"}
+    ]},
+    {id:"ise",title:"Internal Spec - Pellets from Extruder",color:"#3B6D11",rows:[
+      {p:"MFR",u:"g/10 min",mn:"2.8",tg:"2.9",mx:"3.0",m:"SP-026-PR-016"},
+      {p:"Yellowness Index",u:"-",mn:"-",tg:"-2.5",mx:"-1.5",m:"SP-026-PR-041"},
+      {p:"Volatiles",u:"%",mn:"-",tg:"-",mx:"0.035",m:"SP-026-PR-019"},
+      {p:"AO 1010 (Irganox 1010)",u:"ppm",mn:"420",tg:"460",mx:"500",m:"SP-026-PR-037"},
+      {p:"Pellet Count",u:"pellet/g",mn:"35",tg:"45",mx:"60",m:"SP-026-PR-042"},
+      {p:"Bulk Density",u:"kg/m3",mn:"500",tg:"530",mx:"550",m:"SP-027-PR-015"}
+    ]},
+    {id:"oc",title:"Operating Conditions - Polymerization",color:"#854F0B",rows:[
+      {p:"T in R-2201",u:"C",mn:"-",tg:"73",mx:"-",m:""},
+      {p:"T in R-2202",u:"C",mn:"-",tg:"73",mx:"-",m:""},
+      {p:"Density in R-2201",u:"kg/m3",mn:"534",tg:"-",mx:"535",m:""},
+      {p:"Density in R-2202",u:"kg/m3",mn:"571",tg:"-",mx:"572",m:""},
+      {p:"H2 to R-2201",u:"ppm vol",mn:"850",tg:"860",mx:"870",m:""},
+      {p:"H2 to R-2202",u:"ppm vol",mn:"850",tg:"860",mx:"870",m:""},
+      {p:"MFR R-2201 limits",u:"g/10 min",mn:"2.8",tg:"-",mx:"3.0",m:""},
+      {p:"MFR R-2202 target",u:"g/10 min",mn:"-",tg:"2.9",mx:"-",m:""},
+      {p:"Split R-2201",u:"wt%",mn:"-",tg:"~63",mx:"-",m:""},
+      {p:"TEAL/Propylene ratio",u:"g/kg",mn:"0.14",tg:"-",mx:"0.16",m:""},
+      {p:"T/D ratio",u:"wt",mn:"110",tg:"-",mx:"130",m:""},
+      {p:"XS range",u:"wt%",mn:"3.6",tg:"3.8",mx:"4.0",m:""}
+    ]},
+    {id:"ex",title:"Extrusion Conditions",color:"#993C1D",rows:[
+      {p:"Throughput",u:"t/hr",mn:"14",tg:"18",mx:"25",m:""},
+      {p:"A.O. 1010",u:"ppm",mn:"-",tg:"450",mx:"450",m:""},
+      {p:"Irgafos 168",u:"ppm",mn:"-",tg:"900",mx:"900",m:""},
+      {p:"DHT-4A",u:"ppm",mn:"-",tg:"225",mx:"225",m:""},
+      {p:"CBA-5",u:"ppm",mn:"-",tg:"1575",mx:"1575",m:""},
+      {p:"Temp C2",u:"C",mn:"-",tg:"180",mx:"180",m:""},
+      {p:"Temp C3-C4",u:"C",mn:"220",tg:"223",mx:"225",m:""},
+      {p:"Temp C5-C7",u:"C",mn:"215",tg:"220",mx:"220",m:""}
+    ]},
+    {id:"qp",title:"Sampling Frequency - Transition",color:"#185FA5",rows:[
+      {p:"Powder MFR",u:"",mn:"-",tg:"every 2h",mx:"-",m:"ISO 1133"},
+      {p:"Powder XS",u:"",mn:"-",tg:"every 6h",mx:"-",m:"BTM 20037"},
+      {p:"Pellet MFR",u:"",mn:"-",tg:"every 2h",mx:"-",m:"ISO 1133"}
+    ]}
+  ]
+}];
+
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function uid(){return"x"+Date.now().toString(36)+Math.random().toString(36).slice(2,4);}
+function nowT(){return new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});}
+function getTR(){return TRANS[ATID]||TRANS[0];}
+function getST(i){if(!ST[i])ST[i]=TRANS[i].steps.map(function(){return"p";});return ST[i];}
+function h(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function fmtS(s){var hr=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;return hr>0?hr+"h "+p2(m)+"m "+p2(sc)+"s":p2(m)+"m "+p2(sc)+"s";}
+function p2(n){return String(n).padStart(2,"0");}
+function fmtMs(ms){return fmtS(Math.floor(ms/1000));}
+
+function goTo(id,btn){
+  document.querySelectorAll(".page").forEach(function(el){el.classList.remove("on");});
+  document.querySelectorAll(".nb").forEach(function(el){el.classList.remove("on");});
+  document.getElementById(id).classList.add("on");
+  btn.classList.add("on");
+  if(id==="op")renderOp();
+  else if(id==="dash")renderDash();
+  else if(id==="eng")renderEng();
+  else if(id==="wb")renderWB();
+}
+
+/* ============================================================
+   QUALITY / SPEC HELPERS
+   ============================================================ */
+function qbar(val,lo,hi,tgt,bl,bh,label,unit,spec){
+  if(val===null||isNaN(val))return'<div style="background:rgba(0,0,0,.05);padding:9px 11px;border-radius:7px;font-size:12px;color:#9b9b97;margin-bottom:12px">'+h(label)+': no data yet</div>';
+  var rng=hi-lo;
+  function pct(v){return Math.max(0,Math.min(100,((v-lo)/rng)*100));}
+  var col=val>=bl&&val<=bh?"#3B6D11":val>=lo&&val<=hi?"#EF9F27":"#E24B4A";
+  return'<div class="qw">'+
+    '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span style="font-weight:600;color:#555">'+h(label)+'</span>'+
+    '<span style="font-size:11px;background:rgba(250,238,218,.9);color:#854F0B;padding:1px 7px;border-radius:4px;font-weight:600;border:1px solid rgba(250,199,117,.4)">'+h(spec)+'</span></div>'+
+    '<div style="display:flex;justify-content:space-between;font-size:10px;color:#9b9b97;margin-bottom:3px"><span>'+lo+'</span><span>tgt '+tgt+'</span><span>'+hi+'</span></div>'+
+    '<div class="qbar"><div class="qband" style="left:'+pct(bl)+'%;width:'+(pct(bh)-pct(bl))+'%"></div><div class="qtgt" style="left:'+(pct(tgt)-0.5)+'%"></div><div class="qdot" style="left:calc('+pct(val)+'% - 5px);background:'+col+'"></div></div>'+
+    '<div style="text-align:right;font-family:monospace;font-weight:900;color:'+col+'">'+val.toFixed(2)+'<span style="font-size:11px;color:#777;font-family:inherit;font-weight:400;margin-left:4px">'+h(unit)+'</span></div></div>';
+}
+function specBox(label,lo,hi,tgt,unit,color){
+  if(!lo&&!hi&&!tgt)return"";
+  return'<div class="spec-box" style="border-left-color:'+h(color)+'"><div style="font-size:10px;color:#9b9b97;margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em;font-weight:600">'+h(label)+'</div>'+
+    '<div style="font-size:13px;font-weight:800;color:'+h(color)+';margin-bottom:2px">'+lo+' - '+hi+' <span style="font-size:11px;font-weight:500">'+h(unit)+'</span></div>'+
+    '<div style="font-size:11px;color:#6b6b67">Target: <b>'+tgt+'</b> '+h(unit)+'</div></div>';
+}
+
+/* ============================================================
+   TREND CHART — Pellet (solid/circles) + Powder (dashed/squares)
+   ============================================================ */
+function makeTrend(smp,tr){
+  if(smp.length<2)return'<div style="text-align:center;color:#9b9b97;padding:14px;font-size:12px">Add at least 2 results to see trend</div>';
+  var pellets=smp.filter(function(r){return !r.stype||r.stype==="Pellet";});
+  var powders=smp.filter(function(r){return r.stype==="Powder";});
+
+  function makeSVG(key,label,unit,lo,hi,tgt,bl,bh,mainCol){
+    var W=300,H=108,PAD=34,RP=8,TP=26,BP=20,PW=W-PAD-RP,PH=H-TP-BP;
+    var n=smp.length; var xS=n>1?PW/(n-1):PW;
+    /* Map each sample to an x position based on global index */
+    function pts(arr){
+      return arr.map(function(r){
+        var gi=smp.indexOf(r); var v=parseFloat(r[key]);
+        if(isNaN(v))return null;
+        var x=PAD+(gi/(Math.max(n-1,1)))*PW;
+        var y=TP+PH-(((v-lo)/(hi-lo))*PH);
+        return{x:x,y:Math.max(TP,Math.min(TP+PH,y)),v:v,t:r.time};
+      }).filter(Boolean);
+    }
+    var pelPts=pts(pellets), powPts=pts(powders), allPts=pts(smp);
+    if(!allPts.length)return'<div style="font-size:10px;color:#9b9b97;text-align:center;padding:10px">'+label+': no data</div>';
+    function py(v){return TP+PH-(((v-lo)/(hi-lo))*PH);}
+    var by1=py(bh),by2=py(bl),ty=py(tgt);
+    var s='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block">';
+    /* Header */
+    s+='<text x="'+PAD+'" y="11" font-size="9" font-weight="700" fill="'+mainCol+'">'+label+'</text>';
+    s+='<text x="'+PAD+'" y="20" font-size="7.5" fill="#9b9b97">'+lo+'-'+hi+' '+unit+' | tgt '+tgt+'</text>';
+    /* Spec lines */
+    s+='<line x1="'+PAD+'" y1="'+TP+'" x2="'+(PAD+PW)+'" y2="'+TP+'" stroke="#E24B4A" stroke-width="0.5" stroke-dasharray="2,4" opacity="0.5"/>';
+    s+='<line x1="'+PAD+'" y1="'+(TP+PH)+'" x2="'+(PAD+PW)+'" y2="'+(TP+PH)+'" stroke="#E24B4A" stroke-width="0.5" stroke-dasharray="2,4" opacity="0.5"/>';
+    /* Target band */
+    s+='<rect x="'+PAD+'" y="'+by1+'" width="'+PW+'" height="'+(by2-by1)+'" fill="#C0DD97" opacity="0.35" rx="1"/>';
+    /* Target line */
+    s+='<line x1="'+PAD+'" y1="'+ty+'" x2="'+(PAD+PW)+'" y2="'+ty+'" stroke="#3B6D11" stroke-width="1" stroke-dasharray="3,3" opacity="0.6"/>';
+    /* Y labels */
+    s+='<text x="'+(PAD-2)+'" y="'+(TP+4)+'" text-anchor="end" font-size="7.5" fill="#9b9b97">'+hi+'</text>';
+    s+='<text x="'+(PAD-2)+'" y="'+(TP+PH+4)+'" text-anchor="end" font-size="7.5" fill="#9b9b97">'+lo+'</text>';
+    s+='<text x="'+(PAD-2)+'" y="'+(ty+3)+'" text-anchor="end" font-size="7.5" fill="#3B6D11" font-weight="700">'+tgt+'</text>';
+    /* Powder line — dashed purple */
+    if(powPts.length>1){var pl=powPts.map(function(p,i){return(i===0?"M":"L")+p.x.toFixed(1)+","+p.y.toFixed(1);}).join(" ");s+='<path d="'+pl+'" fill="none" stroke="#534AB7" stroke-width="2" stroke-dasharray="5,3" stroke-linecap="round" stroke-linejoin="round"/>';}
+    /* Pellet line — solid blue */
+    if(pelPts.length>1){var pl2=pelPts.map(function(p,i){return(i===0?"M":"L")+p.x.toFixed(1)+","+p.y.toFixed(1);}).join(" ");s+='<path d="'+pl2+'" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';}
+    /* Powder dots — squares */
+    powPts.forEach(function(p){
+      var inB=p.v>=bl&&p.v<=bh,inS=p.v>=lo&&p.v<=hi,c=inB?"#3B6D11":inS?"#EF9F27":"#E24B4A";
+      s+='<rect x="'+(p.x-4).toFixed(1)+'" y="'+(p.y-4).toFixed(1)+'" width="8" height="8" fill="'+c+'" stroke="#fff" stroke-width="1.2" rx="1"/>';
+      s+='<text x="'+p.x.toFixed(1)+'" y="'+(p.y-8).toFixed(1)+'" text-anchor="middle" font-size="7.5" fill="'+c+'" font-weight="700">'+p.v.toFixed(2)+'</text>';
+    });
+    /* Pellet dots — circles */
+    pelPts.forEach(function(p){
+      var inB=p.v>=bl&&p.v<=bh,inS=p.v>=lo&&p.v<=hi,c=inB?"#3B6D11":inS?"#EF9F27":"#E24B4A";
+      s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3.5" fill="'+c+'" stroke="#fff" stroke-width="1.2"/>';
+      s+='<text x="'+p.x.toFixed(1)+'" y="'+(p.y-8).toFixed(1)+'" text-anchor="middle" font-size="7.5" fill="'+c+'" font-weight="700">'+p.v.toFixed(2)+'</text>';
+    });
+    /* X time labels — every point */
+    /* X time labels — show label for each unique time, no duplicates */
+    var shownTimes={};
+    allPts.forEach(function(p,pi){
+      if(shownTimes[p.t]) return; /* skip duplicate times */
+      shownTimes[p.t]=true;
+      var anchor=pi===0?"start":pi===allPts.length-1?"end":"middle";
+      s+='<text x="'+p.x.toFixed(1)+'" y="'+(H-3)+'" text-anchor="'+anchor+'" font-size="7" fill="#9b9b97">'+p.t+'</text>';
+    });
+    /* Legend */
+    var lx=PAD+PW-90,ly=TP-4;
+    if(pelPts.length){s+='<line x1="'+lx+'" y1="'+(ly+2)+'" x2="'+(lx+14)+'" y2="'+(ly+2)+'" stroke="#185FA5" stroke-width="2"/><circle cx="'+(lx+7)+'" cy="'+(ly+2)+'" r="2.5" fill="#185FA5"/><text x="'+(lx+18)+'" y="'+(ly+5)+'" font-size="7.5" fill="#185FA5" font-weight="600">Pellet</text>';}
+    if(powPts.length){s+='<line x1="'+lx+'" y1="'+(ly+11)+'" x2="'+(lx+14)+'" y2="'+(ly+11)+'" stroke="#534AB7" stroke-width="2" stroke-dasharray="4,2"/><rect x="'+(lx+4)+'" y="'+(ly+7)+'" width="6" height="6" fill="#534AB7" rx="1"/><text x="'+(lx+18)+'" y="'+(ly+14)+'" font-size="7.5" fill="#534AB7" font-weight="600">Powder</text>';}
+    s+='</svg>';
+    return s;
+  }
+
+  var charts=[];
+  charts.push(makeSVG("mfr","MFR","g/10min",tr.mfrLo,tr.mfrHi,tr.mfrT,tr.mfrBl,tr.mfrBh,"#185FA5"));
+  var hasXS=smp.some(function(r){return !isNaN(parseFloat(r.xs));});
+  if(hasXS)charts.push(makeSVG("xs","XS","%",tr.xsLo,tr.xsHi,tr.xsT,tr.xsBl,tr.xsBh,"#534AB7"));
+  if(tr.c2Lo){var c2b=(tr.c2Hi-tr.c2Lo)*0.25;charts.push(makeSVG("c2","C2 Content","%",tr.c2Lo,tr.c2Hi,tr.c2T,tr.c2Lo+c2b,tr.c2Hi-c2b,"#993C1D"));}
+  var cols=charts.length===3?"1fr 1fr 1fr":charts.length===2?"1fr 1fr":"1fr";
+  return'<div style="display:grid;grid-template-columns:'+cols+';gap:7px">'+
+    charts.map(function(s){return'<div style="background:rgba(0,0,0,.03);border-radius:7px;padding:7px 6px;border:1px solid rgba(0,0,0,.06)">'+s+'</div>';}).join("")+'</div>';
+}
+
+/* ============================================================
+   ELAPSED TIMER
+   ============================================================ */
+function startELT(){
+  if(ELI)clearInterval(ELI);
+  ELI=setInterval(function(){var el=document.getElementById("el-val");if(el&&STARTED[ATID])el.textContent=fmtMs(Date.now()-STARTED[ATID]);},1000);
+}
+function startTrans(){
+  var tr=getTR();STARTED[ATID]=Date.now();
+  ST[ATID]=tr.steps.map(function(){return"p";});ST[ATID][0]="a";
+  ELOG.push({time:nowT(),type:"info",msg:"Grade change started: "+tr.from+" to "+tr.to+" | Op: "+OP});
+  startELT();renderOp();
+}
+function resetTrans(){
+  if(!confirm("Reset? All progress will be lost."))return;
+  var tr=getTR();STARTED[ATID]=null;DUR[ATID]=null;
+  ST[ATID]=tr.steps.map(function(){return"p";});CDR[ATID]={};
+  if(ELI){clearInterval(ELI);ELI=null;}
+  ELOG.push({time:nowT(),type:"warn",msg:"Reset: "+tr.from+" to "+tr.to});
+  renderOp();
+}
+function chT(v){ATID=parseInt(v);if(ELI){clearInterval(ELI);ELI=null;}renderOp();}
+function cnfStep(si){
+  var sts=getST(ATID),tr=getTR();
+  var nel=document.getElementById("nt_"+si);var notes=nel?nel.value:"";
+  sts[si]="c";if(si+1<sts.length)sts[si+1]="a";
+  if(!CDR[ATID])CDR[ATID]={};
+  CDR[ATID][si]={time:nowT(),operator:OP,notes:notes};
+  ELOG.push({time:nowT(),type:"confirm",msg:"Step "+(si+1)+" confirmed by "+OP+(notes?" - "+notes:"")});
+  var sid=tr.steps[si].id;
+  if(window["_cdi_"+sid]){clearInterval(window["_cdi_"+sid]);delete window["_cdi_"+sid];}
+  if(sts.every(function(s){return s==="c";})){
+    DUR[ATID]=Date.now()-STARTED[ATID];
+    ELOG.push({time:nowT(),type:"confirm",msg:"Complete! "+tr.from+" to "+tr.to+" - "+fmtMs(DUR[ATID])});
+  }
+  renderOp();
+}
+function startCD(sid,mins){
+  window["_cdr_"+sid]=mins*60;
+  window["_cdi_"+sid]=setInterval(function(){
+    if(window["_cdr_"+sid]>0){window["_cdr_"+sid]--;
+      var el=document.getElementById("cdv_"+sid),ef=document.getElementById("cdf_"+sid);
+      if(el){var r=window["_cdr_"+sid];el.textContent=r===0?"TIME ELAPSED":fmtS(r);if(r===0)el.style.color="#E24B4A";}
+      if(ef){var sp=null;TRANS.forEach(function(t){t.steps.forEach(function(s){if(s.id===sid)sp=s;});});if(sp){var tot=sp.mins*60,pp=Math.round((tot-window["_cdr_"+sid])/tot*100);ef.style.width=pp+"%";ef.style.background=pp>90?"#E24B4A":pp>70?"#EF9F27":"#378ADD";}}
+    }else{clearInterval(window["_cdi_"+sid]);}
+  },1000);
+}
+function togSF(){var el=document.getElementById("sf");if(el)el.classList.toggle("hidden");}
+function saveSmp(){
+  var mfr=document.getElementById("ns-mfr").value,xs=document.getElementById("ns-xs").value;
+  if(!mfr&&!xs){alert("Enter at least MFR or XS.");return;}
+  var tel=document.querySelector('input[name="smp-type"]:checked');
+  var stype=tel?tel.value:"Pellet";
+  if(!SMP[ATID])SMP[ATID]=[];
+  SMP[ATID].push({id:uid(),time:document.getElementById("ns-time").value||nowT(),stype:stype,mfr:mfr,xs:xs,c2:document.getElementById("ns-c2").value,notes:document.getElementById("ns-notes").value});
+  ELOG.push({time:nowT(),type:"confirm",msg:"Lab result ("+stype+"): MFR "+(mfr||"-")+" XS "+(xs||"-")+"%"});
+  renderOp();
+}
+function delSmp(idx){if(!SMP[ATID])return;SMP[ATID].splice(idx,1);renderOp();}
+
+/* ============================================================
+   OPERATOR RENDER
+   ============================================================ */
+function renderOp(){
+  var tr=getTR(),i=ATID,sts=getST(i),smp=SMP[i]||[],cdat=CDR[i]||{};
+  var isS=!!STARTED[i],done=sts.filter(function(s){return s==="c";}).length;
+  var allDone=isS&&done===sts.length,pct=sts.length>0?Math.round(done/sts.length*100):0;
+  var opts=TRANS.map(function(t,ti){return'<option value="'+ti+'"'+(ti===i?" selected":"")+'>'+h(t.from)+' to '+h(t.to)+'</option>';}).join("");
+  var latest=smp.length?smp[smp.length-1]:null;
+  var lMFR=latest?parseFloat(latest.mfr):NaN,lXS=latest?parseFloat(latest.xs):NaN,lC2=latest?parseFloat(latest.c2):NaN;
+  var startedDT=STARTED[i]?new Date(STARTED[i]).toLocaleString("en-GB",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}):"";
+  var ncols=tr.c2Lo?3:2;
+  var specH='<div style="display:grid;grid-template-columns:repeat('+ncols+',1fr);gap:9px;margin-bottom:13px">'+
+    specBox("Pellet MFR",tr.mfrLo,tr.mfrHi,tr.mfrT,"g/10 min","#185FA5")+
+    specBox("XS",tr.xsLo,tr.xsHi,tr.xsT,"%","#534AB7")+
+    (tr.c2Lo?specBox("C2 Content",tr.c2Lo,tr.c2Hi,tr.c2T,"%","#993C1D"):"")+
+  '</div>';
+  var gaugeH=qbar(isNaN(lMFR)?null:lMFR,tr.mfrLo,tr.mfrHi,tr.mfrT,tr.mfrBl,tr.mfrBh,"MFR","g/10 min",tr.mfrLo+"-"+tr.mfrHi)+
+    qbar(isNaN(lXS)?null:lXS,tr.xsLo,tr.xsHi,tr.xsT,tr.xsBl,tr.xsBh,"XS","%",tr.xsLo+"-"+tr.xsHi+"%");
+  if(tr.c2Lo){var c2bw=(tr.c2Hi-tr.c2Lo)*0.25;gaugeH+=qbar(isNaN(lC2)?null:lC2,tr.c2Lo,tr.c2Hi,tr.c2T,tr.c2Lo+c2bw,tr.c2Hi-c2bw,"C2 Content","%",tr.c2Lo+"-"+tr.c2Hi+"%");}
+  var smpR="";
+  if(smp.length){smpR=smp.slice().reverse().map(function(r,ri){
+    var mfr=parseFloat(r.mfr),xs=parseFloat(r.xs),c2=parseFloat(r.c2);
+    var mok=mfr>=tr.mfrLo&&mfr<=tr.mfrHi,xok=xs>=tr.xsLo&&xs<=tr.xsHi,cok=tr.c2Lo?c2>=tr.c2Lo&&c2<=tr.c2Hi:true;
+    var origIdx=smp.length-1-ri;
+    var tc=r.stype==="Powder"?"#534AB7":"#185FA5",tbg=r.stype==="Powder"?"rgba(83,74,183,.12)":"rgba(24,95,165,.12)";
+    return'<tr style="background:'+(ri===0?"rgba(24,95,165,.04)":"transparent")+'">'+
+      '<td>'+h(r.time)+'</td>'+
+      '<td><span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:'+tbg+';color:'+tc+'">'+h(r.stype||"Pellet")+'</span></td>'+
+      '<td class="'+(isNaN(mfr)?"":mok?"ok":"bad")+'">'+h(r.mfr||"-")+'</td>'+
+      '<td class="'+(isNaN(xs)?"":xok?"ok":"bad")+'">'+h(r.xs||"-")+'</td>'+
+      '<td class="'+(isNaN(c2)||!tr.c2Lo?"":cok?"ok":"bad")+'">'+h(r.c2||"-")+'</td>'+
+      '<td style="color:#777">'+h(r.notes||"-")+'</td>'+
+      '<td><button onclick="delSmp('+origIdx+')" style="background:none;border:none;color:#E24B4A;cursor:pointer;font-size:14px;font-weight:700">x</button></td>'+
+    '</tr>';
+  }).join("");}
+  var logH=ELOG.slice().reverse().slice(0,8).map(function(ev){
+    return'<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.05);align-items:flex-start">'+
+      '<span style="font-size:11px;font-family:monospace;color:#9b9b97;white-space:nowrap;padding-top:2px">'+h(ev.time)+'</span>'+
+      '<div style="width:7px;height:7px;border-radius:50%;background:'+(ev.type==="confirm"?"#639922":"#ccc")+';flex-shrink:0;margin-top:5px"></div>'+
+      '<span style="font-size:13px">'+h(ev.msg)+'</span></div>';
+  }).join("");
+  var nextS=120-Math.floor((Date.now()/60000)%120);
+  var out='<div class="card"><div class="fx" style="margin-bottom:8px">'+
+    '<div style="text-align:center"><div style="font-size:10px;color:#999;font-weight:600;text-transform:uppercase">Current</div><div class="mon" style="font-size:18px;font-weight:900">'+h(tr.from)+'</div></div>'+
+    '<div style="font-size:24px;color:#ccc;font-weight:300;padding:0 4px">&#8594;</div>'+
+    '<div style="text-align:center"><div style="font-size:10px;color:#999;font-weight:600;text-transform:uppercase">Target</div><div class="mon" style="font-size:18px;font-weight:900;color:#185FA5">'+h(tr.to)+'</div></div>'+
+    '<span style="background:rgba(24,95,165,.1);color:#185FA5;font-size:11px;padding:3px 9px;border-radius:6px;font-weight:700;border:1px solid rgba(24,95,165,.18)">'+h(tr.type)+'</span>'+
+    '</div><div class="fx"><select class="sel" onchange="chT(this.value)">'+opts+'</select>'+
+    '<span style="font-size:12px;color:#777"><b style="color:#639922">'+h(tr.status)+'</b> '+h(tr.ver)+' | Op: <b>'+h(OP)+'</b></span></div></div>';
+  out+='<div class="card" style="background:rgba(24,95,165,.04);border-color:rgba(24,95,165,.15)">'+
+    '<div class="ct">Specifications - '+h(tr.to)+'</div>'+specH+gaugeH+
+    '<div style="font-size:11px;color:#9b9b97;margin-top:4px">Green=target band | Orange=in spec | Red=out of spec</div></div>';
+  if(!isS){
+    out+='<div class="start-box"><div class="start-icon">&#9654;</div>'+
+      '<div style="font-size:21px;font-weight:900;margin-bottom:7px">Ready to start?</div>'+
+      '<div style="font-size:14px;color:#6b6b67;margin-bottom:24px">'+h(tr.from)+' to '+h(tr.to)+' ('+h(tr.type)+')<br>'+tr.steps.length+' steps | Op: <b>'+h(OP)+'</b></div>'+
+      '<button class="btn-start" onclick="startTrans()">&#9654; Start Grade Change</button></div>';
+  } else if(allDone){
+    var durStr=STARTED[i]?fmtMs(Date.now()-STARTED[i]):"";
+    out+='<div class="done-banner"><div class="done-icon">&#10003;</div>'+
+      '<div style="font-size:22px;font-weight:900;color:#3B6D11;margin-bottom:6px">Grade Change Complete!</div>'+
+      '<div style="font-size:14px;color:#5a8a5a;margin-bottom:5px">'+h(tr.from)+' to '+h(tr.to)+' | All '+tr.steps.length+' steps confirmed</div>'+
+      '<div style="font-size:13px;color:#777;margin-bottom:16px">Duration: <b style="color:#185FA5">'+durStr+'</b> | Started '+h(startedDT)+'</div>'+
+      '<button onclick="resetTrans()" style="font-size:12px;padding:7px 18px;background:rgba(0,0,0,.07);color:#555;border:1px solid rgba(0,0,0,.12);border-radius:8px;cursor:pointer;font-family:inherit;font-weight:600">Start new transition</button></div>';
+  } else {
+    out+='<div class="el-bar"><div><div style="font-size:11px;color:#6b6b67;margin-bottom:2px">Elapsed</div><div class="el-val" id="el-val">'+fmtMs(Date.now()-STARTED[i])+'</div></div>'+
+      '<div style="flex:1"></div>'+
+      '<div style="text-align:right"><div style="font-size:11px;color:#9b9b97">Started</div><div style="font-size:11px;color:#9b9b97">'+h(startedDT)+'</div></div>'+
+      '<button onclick="resetTrans()" style="font-size:11px;padding:5px 10px;background:rgba(231,50,50,.08);color:#A32D2D;border:1px solid rgba(231,50,50,.2);border-radius:7px;cursor:pointer;font-family:inherit;font-weight:700">Reset</button></div>';
+    out+='<div class="card" style="padding:11px 16px"><div style="display:flex;justify-content:space-between;margin-bottom:4px">'+
+      '<b style="font-size:12px;color:#777;text-transform:uppercase;letter-spacing:.04em">Progress</b>'+
+      '<span class="mon" style="font-size:12px;color:#777">'+done+'/'+sts.length+' - '+pct+'%</span></div>'+
+      '<div class="pbar"><div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,#185FA5,#2b7fc4);border-radius:4px;transition:width .5s"></div></div></div>';
+    var rows=sts.map(function(st,si){
+      var step=tr.steps[si],cd=cdat[si];
+      var lc=st==="c"?"#C0DD97":st==="a"?"#FAC775":"rgba(0,0,0,.08)";
+      var cls=st==="c"?"sd":st==="a"?"sa":"";
+      var cdH="";
+      if(st==="a"&&step.mins){
+        var rem=window["_cdr_"+step.id]!==undefined?window["_cdr_"+step.id]:step.mins*60;
+        var tot=step.mins*60,pp=Math.round((tot-rem)/tot*100);
+        cdH='<div style="display:flex;justify-content:space-between;font-size:11px;color:#6b6b67;margin-bottom:3px"><span>Countdown</span>'+
+          '<span style="font-family:monospace;font-weight:800;color:#854F0B" id="cdv_'+step.id+'">'+fmtS(rem)+'</span></div>'+
+          '<div style="height:5px;background:rgba(0,0,0,.08);border-radius:3px;overflow:hidden;margin-bottom:6px">'+
+          '<div id="cdf_'+step.id+'" style="height:100%;width:'+pp+'%;background:#378ADD;border-radius:3px;transition:width 1s"></div></div>';
+        if(!window["_cdi_"+step.id])startCD(step.id,step.mins);
+      }
+      var ntH=st==="a"?'<textarea style="width:100%;border:1px solid rgba(0,0,0,.12);border-radius:7px;padding:6px 9px;font-size:12px;font-family:inherit;margin-bottom:8px;resize:none" id="nt_'+si+'" rows="1" placeholder="Notes..."></textarea>':"";
+      var stmpH=(st==="c"&&cd)?'<div class="stamp">Confirmed '+h(cd.time)+' by '+h(cd.operator)+(cd.notes?" - "+h(cd.notes):"")+'</div>':"";
+      var btnH=st==="p"?'<span style="font-size:12px;color:#bbb;font-style:italic">Waiting for previous step...</span>':
+        st==="a"?'<button class="bc" onclick="cnfStep('+si+')">Confirm<small>'+nowT()+' - '+h(OP)+'</small></button>':
+        '<span style="color:#639922;font-weight:900;font-size:13px">&#10003; Done</span>';
+      return'<tr class="'+cls+'"><td class="sn" style="border-left-color:'+lc+'">'+(si+1)+'</td>'+
+        '<td class="sc"><div style="font-weight:800;font-size:13.5px;margin-bottom:4px">'+h(step.title)+'</div>'+
+        '<div style="font-size:13px;color:#333;line-height:1.75;margin-bottom:4px">'+h(step.instr)+'</div>'+
+        '<div style="font-size:11px;color:#9b9b97;margin-bottom:3px">'+h(step.trigger)+(step.role?' | '+h(step.role):'')+'</div>'+
+        (step.dcs?'<div style="font-size:11px;font-family:monospace;color:#185FA5;font-weight:700;margin-bottom:2px">'+h(step.dcs)+'</div>':'')+
+        '<div style="font-size:11px;color:#777;margin-bottom:6px">'+h(step.tgt)+'</div>'+
+        cdH+ntH+stmpH+'<div style="margin-top:6px">'+btnH+'</div></td></tr>';
+    }).join("");
+    out+='<div class="card" style="padding:0;overflow:hidden"><div style="padding:10px 16px;border-bottom:1px solid rgba(0,0,0,.06);font-weight:800;font-size:12px;color:#777;text-transform:uppercase;letter-spacing:.04em">'+tr.steps.length+' Steps</div>'+
+      '<table class="stbl"><tbody>'+rows+'</tbody></table></div>';
+    startELT();
+  }
+  out+='<div class="card"><div class="fx" style="margin-bottom:10px;justify-content:space-between">'+
+    '<span class="ct" style="margin:0">Lab Results</span><button class="bb" onclick="togSF()">+ Add result</button></div>'+
+    '<div id="sf" class="hidden" style="background:rgba(192,221,151,.15);border:1px solid rgba(192,221,151,.4);border-radius:11px;padding:13px;margin-bottom:10px">'+
+    '<div style="display:flex;gap:8px;margin-bottom:10px">'+
+      '<div style="font-size:12px;font-weight:700;color:#555;margin-top:8px;white-space:nowrap">Type:</div>'+
+      '<label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px;font-weight:600;padding:6px 12px;border-radius:7px;border:1.5px solid rgba(24,95,165,.3);background:rgba(24,95,165,.08);color:#185FA5">'+
+        '<input type="radio" name="smp-type" value="Pellet" checked style="margin:0"> Pellet</label>'+
+      '<label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px;font-weight:600;padding:6px 12px;border-radius:7px;border:1.5px solid rgba(83,74,183,.3);background:rgba(83,74,183,.08);color:#534AB7">'+
+        '<input type="radio" name="smp-type" value="Powder" style="margin:0"> Powder</label>'+
+    '</div>'+
+    '<div class="g3"><div class="fld"><label>Time</label><input id="ns-time" placeholder="HH:MM"></div>'+
+    '<div class="fld"><label>MFR (g/10 min)</label><input id="ns-mfr" type="number" step="0.01" placeholder="2.75"></div>'+
+    '<div class="fld"><label>C2 bonded (%)</label><input id="ns-c2" type="number" step="0.01" placeholder="optional"></div></div>'+
+    '<div class="g2"><div class="fld"><label>XS (%)</label><input id="ns-xs" type="number" step="0.01" placeholder="3.72"></div>'+
+    '<div class="fld"><label>Notes</label><input id="ns-notes" placeholder="Remarks"></div></div>'+
+    '<div class="fx"><button class="bg" onclick="saveSmp()">Save</button><button class="bx" onclick="togSF()">Cancel</button></div></div>';
+  if(smp.length>0){
+    out+='<div style="margin-bottom:13px;padding:10px;background:rgba(24,95,165,.04);border-radius:9px;border:1px solid rgba(24,95,165,.1)">'+
+      '<div style="font-size:12px;font-weight:700;color:#555;margin-bottom:7px">Trend</div>'+makeTrend(smp,tr)+'</div>';
+    out+='<table class="sm-tbl"><thead><tr><th>Time</th><th>Type</th><th>MFR</th><th>XS</th><th>C2</th><th>Notes</th><th></th></tr></thead><tbody>'+smpR+'</tbody></table>'+
+      '<div style="font-size:10px;color:#9b9b97;margin-top:5px">MFR '+tr.mfrLo+'-'+tr.mfrHi+' | XS '+tr.xsLo+'-'+tr.xsHi+'%'+(tr.c2Lo?' | C2 '+tr.c2Lo+'-'+tr.c2Hi+'%':'')+'</div>';
+  } else {
+    out+='<div style="text-align:center;color:#9b9b97;padding:14px;font-size:13px">No results yet.</div>';
+  }
+  out+='</div>';
+  out+='<div style="background:linear-gradient(135deg,rgba(250,238,218,.9),rgba(250,220,180,.7));border:1px solid rgba(250,199,117,.5);border-radius:11px;padding:13px 16px;margin-bottom:12px">'+
+    '<div style="font-size:12px;font-weight:700;color:#854F0B;margin-bottom:3px">Next sample due</div>'+
+    '<div class="mon" style="font-size:26px;color:#854F0B;font-weight:900">'+nextS+' min</div>'+
+    '<div style="font-size:11px;color:#854F0B;margin-top:2px">Powder + pellet MFR (every 2h)</div></div>';
+  out+='<div class="card"><div class="ct">Event Log</div>'+logH+'</div>';
+  document.getElementById("op").innerHTML=out;
+}
+
+/* ============================================================
+   DASHBOARD — active transition only
+   ============================================================ */
+function renderDash(){
+  var tr=getTR(),i=ATID,sts=getST(i);
+  var isS=!!STARTED[i],done=sts.filter(function(s){return s==="c";}).length;
+  var allD=isS&&done===sts.length,smp=SMP[i]||[];
+  var onSp=0,tot=0;
+  smp.forEach(function(r){var m=parseFloat(r.mfr);if(!isNaN(m)){tot++;if(m>=tr.mfrLo&&m<=tr.mfrHi)onSp++;}});
+  var rate=tot>0?Math.round(onSp/tot*100):null,off=tot-onSp;
+  var pct=sts.length>0?Math.round(done/sts.length*100):0;
+  var durStr=allD&&DUR[i]?fmtMs(DUR[i]):isS?fmtMs(Date.now()-STARTED[i]):"--";
+  var stl=!isS?"Not started":allD?"Complete":"In progress",stc=!isS?"#9b9b97":allD?"#3B6D11":"#185FA5";
+  var out='<div class="card"><div class="fx" style="margin-bottom:8px"><div style="flex:1">'+
+    '<div class="fx" style="margin-bottom:3px"><span class="mon" style="font-size:16px;font-weight:900">'+h(tr.from)+'</span>'+
+    '<span style="color:#ccc;font-size:20px;font-weight:300;padding:0 5px">&#8594;</span>'+
+    '<span class="mon" style="font-size:16px;font-weight:900;color:#185FA5">'+h(tr.to)+'</span>'+
+    '<span style="font-size:11px;background:rgba(0,0,0,.05);color:#777;padding:2px 8px;border-radius:5px">'+h(tr.type)+'</span></div>'+
+    '<div style="font-size:11px;color:#9b9b97">'+h(tr.ver)+' | '+h(tr.add)+'</div></div>'+
+    '<div style="text-align:right"><div style="font-size:12px;font-weight:700;color:'+stc+'">'+stl+'</div>'+
+    '<div class="mon" style="font-size:11px;color:#9b9b97">'+done+'/'+sts.length+'</div></div></div>'+
+    '<div class="pbar" style="margin-bottom:12px"><div style="height:100%;width:'+pct+'%;background:'+(allD?"linear-gradient(90deg,#3B6D11,#5a9a1a)":isS?"linear-gradient(90deg,#185FA5,#2b7fc4)":"rgba(0,0,0,.1)")+';border-radius:4px;transition:width .5s"></div></div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px">'+
+    '<div style="background:rgba(24,95,165,.07);border-radius:9px;padding:11px;text-align:center;border:1px solid rgba(24,95,165,.14)">'+
+      '<div style="font-size:10px;color:#777;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Duration</div>'+
+      '<div class="mon" style="font-size:17px;font-weight:900;color:#185FA5">'+durStr+'</div></div>'+
+    '<div style="background:rgba(231,50,50,.06);border-radius:9px;padding:11px;text-align:center;border:1px solid rgba(231,50,50,.13)">'+
+      '<div style="font-size:10px;color:#777;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Off-spec results</div>'+
+      '<div class="mon" style="font-size:17px;font-weight:900;color:'+(off>0?"#E24B4A":"#3B6D11")+'">'+off+'<span style="font-size:11px;font-weight:500;color:#9b9b97;margin-left:3px">/ '+tot+'</span></div></div>'+
+    '<div style="background:rgba(59,109,17,.07);border-radius:9px;padding:11px;text-align:center;border:1px solid rgba(59,109,17,.13)">'+
+      '<div style="font-size:10px;color:#777;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">On-spec rate</div>'+
+      '<div class="mon" style="font-size:17px;font-weight:900;color:'+(rate===null?"#9b9b97":rate>=90?"#3B6D11":rate>=70?"#EF9F27":"#E24B4A")+'">'+(rate===null?"--":rate+"%")+'</div></div></div></div>';
+  /* Selector for other transitions */
+  var opts=TRANS.map(function(t,ti){return'<option value="'+ti+'"'+(ti===i?" selected":"")+'>'+h(t.from)+' to '+h(t.to)+'</option>';}).join("");
+  out+='<div class="card"><div style="font-size:12px;font-weight:700;color:#777;margin-bottom:6px">Switch transition</div>'+
+    '<select class="sel" onchange="ATID=parseInt(this.value);renderDash()">'+opts+'</select></div>';
+  document.getElementById("dash").innerHTML=out;
+}
+
+/* ============================================================
+   ENGINEER — PE only edit access
+   ============================================================ */
+function engOpenTrans(i){ENG_OPEN=(ENG_OPEN===i?-1:i);ENG_EDIT_STEP=null;ENG_PASTE=-1;renderEng();}
+function engPaste(i){ENG_PASTE=(ENG_PASTE===i?-1:i);ENG_EDIT_STEP=null;renderEng();}
+function engEditStep(ti,si){
+  if(ROLE!=="pe")return;
+  ENG_EDIT_STEP=(ENG_EDIT_STEP&&ENG_EDIT_STEP[0]===ti&&ENG_EDIT_STEP[1]===si?null:[ti,si]);renderEng();
+}
+function engDelStep(ti,si){if(ROLE!=="pe")return;if(!confirm("Delete step?"))return;TRANS[ti].steps.splice(si,1);if(ST[ti])ST[ti].splice(si,1);ENG_EDIT_STEP=null;renderEng();}
+function engAddStep(ti){
+  if(ROLE!=="pe")return;
+  TRANS[ti].steps.push({id:uid(),title:"New step",instr:"Enter instruction.",dcs:null,tgt:"",trigger:"",mins:null,role:"Operator"});
+  if(!ST[ti])ST[ti]=[];ST[ti].push("p");
+  ENG_EDIT_STEP=[ti,TRANS[ti].steps.length-1];renderEng();
+}
+function engSaveStep(){
+  if(!ENG_EDIT_STEP)return;var ti=ENG_EDIT_STEP[0],si=ENG_EDIT_STEP[1],s=TRANS[ti].steps[si];
+  s.title=document.getElementById("ef-ti").value;s.trigger=document.getElementById("ef-tr").value;
+  s.dcs=document.getElementById("ef-dc").value||null;s.tgt=document.getElementById("ef-tg").value;
+  s.mins=document.getElementById("ef-mi").value?parseInt(document.getElementById("ef-mi").value):null;
+  s.role=document.getElementById("ef-ro").value;s.instr=document.getElementById("ef-in").value;
+  ENG_EDIT_STEP=null;renderEng();
+}
+function engImport(ti){
+  if(ROLE!=="pe")return;
+  var ta=document.getElementById("paste-ta-"+ti);if(!ta||!ta.value.trim()){alert("Paste some text first.");return;}
+  var lines=ta.value.trim().split("\n").map(function(l){return l.trim();}).filter(Boolean);
+  var steps=[],cur=null;
+  lines.forEach(function(line){
+    var m=line.match(/^(\d+)[.)\s]+(.+)/);
+    if(m){if(cur)steps.push(cur);cur={instr:m[2],trigger:"See instruction",mins:null,role:"Operator",title:"Step "+m[1]+": "+(m[2].length>55?m[2].slice(0,55)+"...":m[2])};}
+    else if(cur)cur.instr+=" "+line;
+  });
+  if(cur)steps.push(cur);
+  if(!steps.length){alert("No numbered steps found.");return;}
+  TRANS[ti].steps=steps.map(function(s){return Object.assign({id:uid(),dcs:null,tgt:""},s);});
+  ST[ti]=TRANS[ti].steps.map(function(){return"p";});
+  ENG_PASTE=-1;alert(steps.length+" steps imported!");renderEng();
+}
+function ntGradeChg(sel){
+  var customId=sel.getAttribute("data-custom");
+  var inp=customId?document.getElementById(customId):null;
+  if(inp) inp.style.display=(sel.value==="__new")?"block":"none";
+}
+function ntGetGrade(selId,customId){
+  var sel=document.getElementById(selId);
+  if(!sel) return "";
+  if(sel.value==="__new"){
+    var inp=document.getElementById(customId);
+    return inp?inp.value.trim():"";
+  }
+  return sel.value;
+}
+function engCreateTrans(){
+  var fr=ntGetGrade("nt-fr","nt-fr-custom"),to=ntGetGrade("nt-to","nt-to-custom");
+  if(!fr||!to){alert("Select or type From and To grades.");return;}
+  var mlo=parseFloat(document.getElementById("nt-mlo").value)||0,mhi=parseFloat(document.getElementById("nt-mhi").value)||0,mt=parseFloat(document.getElementById("nt-mt").value)||0;
+  var xlo=parseFloat(document.getElementById("nt-xlo").value)||0,xhi=parseFloat(document.getElementById("nt-xhi").value)||0,xt=parseFloat(document.getElementById("nt-xt").value)||0;
+  var clo=document.getElementById("nt-clo").value?parseFloat(document.getElementById("nt-clo").value):null;
+  var chi=document.getElementById("nt-chi").value?parseFloat(document.getElementById("nt-chi").value):null;
+  var ct=document.getElementById("nt-ct").value?parseFloat(document.getElementById("nt-ct").value):null;
+  var mw=(mhi-mlo)*0.3,xw=(xhi-xlo)*0.3;
+  var nt={id:uid(),from:fr,to:to,type:document.getElementById("nt-tp").value||"HOMO-HOMO",
+    ver:document.getElementById("nt-vr").value||"v1.0",status:"Approved",
+    mfrLo:mlo,mfrHi:mhi,mfrT:mt,mfrBl:mlo+mw,mfrBh:mhi-mw,
+    xsLo:xlo,xsHi:xhi,xsT:xt,xsBl:xlo+xw,xsBh:xhi-xw,
+    c2Lo:clo,c2Hi:chi,c2T:ct,add:document.getElementById("nt-ad").value||"",steps:[]};
+  /* Parse steps from textarea */
+  var stepsEl=document.getElementById("nt-steps");
+  if(stepsEl&&stepsEl.value.trim()){
+    var lines=stepsEl.value.trim().split("\n").map(function(l){return l.trim();}).filter(Boolean);
+    var steps=[],cur=null;
+    lines.forEach(function(line){
+      var m=line.match(/^(\d+)[.)\s]+(.+)/);
+      if(m){if(cur)steps.push(cur);cur={instr:m[2],trigger:"See instruction",mins:null,role:"Operator",title:"Step "+m[1]+": "+(m[2].length>55?m[2].slice(0,55)+"...":m[2])};}
+      else if(cur)cur.instr+=" "+line;
+    });
+    if(cur)steps.push(cur);
+    nt.steps=steps.map(function(s){return Object.assign({id:uid(),dcs:null,tgt:""},s);});
+  }
+  TRANS.push(nt);var ni=TRANS.length-1;ST[ni]=[];CDR[ni]={};SMP[ni]=[];STARTED[ni]=null;DUR[ni]=null;
+  ENG_SHOW_NEW=false;ENG_OPEN=ni;
+  syncIfPE();
+  alert("Transition created"+(nt.steps.length?" with "+nt.steps.length+" steps!":" - add steps using the Paste or + Add step buttons."));
+  renderEng();
+}
+
+function renderEng(){
+  var grades=[];TRANS.forEach(function(t){if(grades.indexOf(t.from)<0)grades.push(t.from);if(grades.indexOf(t.to)<0)grades.push(t.to);});
+  var grO=grades.map(function(g){return'<option>'+h(g)+'</option>';}).join("");
+  var isPE=ROLE==="pe";
+  var newF="";
+  if(ENG_SHOW_NEW&&isPE){
+    newF='<div class="nt-form"><div style="font-weight:800;font-size:14px;margin-bottom:13px">New Grade Change Instruction</div>'+
+      '<div class="g2">'+
+      '<div class="fld"><label>From grade *</label>'+
+        '<select id="nt-fr" onchange="ntGradeChg(this)" data-custom="nt-fr-custom" style="width:100%;border:1px solid rgba(0,0,0,.13);border-radius:7px;padding:7px 9px;font-size:13px;font-family:inherit;background:rgba(255,255,255,.85)"><option value="">Select...</option>'+grO+'<option value="__new">+ New grade...</option></select>'+
+        '<input id="nt-fr-custom" placeholder="Type new grade code..." style="display:none;margin-top:5px;width:100%;border:1px solid rgba(0,0,0,.13);border-radius:7px;padding:7px 9px;font-size:13px;font-family:inherit">'+
+      '</div>'+
+      '<div class="fld"><label>To grade *</label>'+
+        '<select id="nt-to" onchange="ntGradeChg(this)" data-custom="nt-to-custom" style="width:100%;border:1px solid rgba(0,0,0,.13);border-radius:7px;padding:7px 9px;font-size:13px;font-family:inherit;background:rgba(255,255,255,.85)"><option value="">Select...</option>'+grO+'<option value="__new">+ New grade...</option></select>'+
+        '<input id="nt-to-custom" placeholder="Type new grade code..." style="display:none;margin-top:5px;width:100%;border:1px solid rgba(0,0,0,.13);border-radius:7px;padding:7px 9px;font-size:13px;font-family:inherit">'+
+      '</div>'+
+      '</div>'+
+      '<div class="g3"><div class="fld"><label>Type</label><input id="nt-tp" placeholder="HOMO-RACO"></div>'+
+      '<div class="fld"><label>Version</label><input id="nt-vr" value="v1.0"></div>'+
+      '<div class="fld"><label>Additivation</label><input id="nt-ad" placeholder="CBA-5 (1575 ppm)"></div></div>'+
+      '<div style="font-weight:700;font-size:12px;color:#555;margin-bottom:5px;text-transform:uppercase;letter-spacing:.03em">Pellet MFR (g/10 min)</div>'+
+      '<div class="g3"><div class="fld"><label>Low</label><input id="nt-mlo" type="number" step="0.01"></div><div class="fld"><label>High</label><input id="nt-mhi" type="number" step="0.01"></div><div class="fld"><label>Target</label><input id="nt-mt" type="number" step="0.01"></div></div>'+
+      '<div style="font-weight:700;font-size:12px;color:#555;margin-bottom:5px;text-transform:uppercase;letter-spacing:.03em">XS (%)</div>'+
+      '<div class="g3"><div class="fld"><label>Low</label><input id="nt-xlo" type="number" step="0.01"></div><div class="fld"><label>High</label><input id="nt-xhi" type="number" step="0.01"></div><div class="fld"><label>Target</label><input id="nt-xt" type="number" step="0.01"></div></div>'+
+      '<div style="font-weight:700;font-size:12px;color:#555;margin-bottom:5px;text-transform:uppercase;letter-spacing:.03em">C2 Content (%) - optional</div>'+
+      '<div class="g3"><div class="fld"><label>Low</label><input id="nt-clo" type="number" step="0.01"></div><div class="fld"><label>High</label><input id="nt-chi" type="number" step="0.01"></div><div class="fld"><label>Target</label><input id="nt-ct" type="number" step="0.01"></div></div>'+
+      '<div style="font-weight:700;font-size:12px;color:#555;margin-bottom:5px;text-transform:uppercase;letter-spacing:.03em">Paste instruction steps (numbered list)</div>'+
+      '<div class="fld" style="margin-bottom:12px"><label>Each numbered line (1. 2. 3.) becomes one step</label>'+
+        '<textarea id="nt-steps" rows="7" placeholder="1. At 19:00, decrease temperatures in loop reactors to 70C...&#10;2. When sum of filling silos reaches 350 tons...&#10;3. 40 minutes later, increase hydrogen flow..."></textarea>'+
+      '</div>'+
+      '<div class="fx"><button class="bg" onclick="engCreateTrans()">Create transition</button><button class="bx" onclick="ENG_SHOW_NEW=false;renderEng()">Cancel</button></div></div>';
+  }
+  var icons=TRANS.map(function(tr,ti){
+    var isO=ENG_OPEN===ti;var body="";
+    if(isO){
+      var sRows=tr.steps.map(function(s,si){
+        var isEd=ENG_EDIT_STEP&&ENG_EDIT_STEP[0]===ti&&ENG_EDIT_STEP[1]===si;
+        var ep="";
+        if(isEd&&ROLE==="pe"){ep='<div class="ep">'+
+          '<div style="font-weight:800;font-size:12px;color:#3B6D11;margin-bottom:10px">Editing step '+(si+1)+'</div>'+
+          '<div class="g2"><div class="fld"><label>Title</label><input id="ef-ti" value="'+h(s.title)+'"></div>'+
+          '<div class="fld"><label>Trigger</label><input id="ef-tr" value="'+h(s.trigger)+'"></div>'+
+          '<div class="fld"><label>DCS point</label><input id="ef-dc" value="'+h(s.dcs||"")+'"></div>'+
+          '<div class="fld"><label>Target value</label><input id="ef-tg" value="'+h(s.tgt)+'"></div>'+
+          '<div class="fld"><label>Countdown (min)</label><input id="ef-mi" type="number" value="'+h(String(s.mins||""))+'"></div>'+
+          '<div class="fld"><label>Role</label><input id="ef-ro" value="'+h(s.role)+'"></div></div>'+
+          '<div class="fld" style="margin-bottom:9px"><label>Instruction text</label><textarea id="ef-in" rows="4">'+h(s.instr)+'</textarea></div>'+
+          '<div class="fx"><button class="bg" onclick="engSaveStep()">Save</button><button class="bx" onclick="ENG_EDIT_STEP=null;renderEng()">Cancel</button></div></div>';}
+        return '<div class="eng-row"'+(ROLE==="pe"?' onclick="engEditStep('+ti+','+si+')"':'')+'>'+
+          '<span style="font-family:monospace;font-size:12px;color:#bbb;font-weight:800;width:24px;flex-shrink:0;padding-top:2px">'+(si+1)+'</span>'+
+          '<div style="flex:1"><div style="font-weight:700;font-size:13px;margin-bottom:2px">'+h(s.title)+'</div>'+
+          '<div style="font-size:11px;color:#777;line-height:1.5">'+(s.instr.length>90?h(s.instr.slice(0,90))+"...":h(s.instr))+'</div>'+
+          (s.dcs?'<div style="font-size:10px;font-family:monospace;color:#185FA5;margin-top:2px;font-weight:600">'+h(s.dcs)+' | '+h(s.tgt)+'</div>':'')+
+          '</div>'+
+          (ROLE==="pe"?'<button class="bdel" onclick="event.stopPropagation();engDelStep('+ti+','+si+')">Del</button>':'')+
+        '</div>'+ep;
+      }).join("");
+      var pSec=ENG_PASTE===ti?
+        '<textarea style="width:100%;font-family:monospace;font-size:12px;border:1px solid rgba(0,0,0,.12);border-radius:8px;padding:9px;margin-bottom:9px;resize:vertical;height:120px;background:rgba(255,255,255,.85)" id="paste-ta-'+ti+'"></textarea>'+
+        '<div class="fx"><button class="bg" onclick="engImport('+ti+')">Parse and import</button><button class="bx" onclick="ENG_PASTE=-1;renderEng()">Cancel</button></div>':
+        '<button class="bg" onclick="engPaste('+ti+')">Paste instruction text</button>';
+      body='<div style="border-top:1px solid rgba(0,0,0,.07);margin-top:11px;padding-top:11px">'+
+        (ROLE==="pe"?'<div class="pb-box"><h4 style="font-size:12px;font-weight:800;color:#3B6D11;margin-bottom:4px">Import steps by pasting text</h4><p style="font-size:11px;color:#5a8a5a;margin-bottom:8px;line-height:1.5">Each numbered line (1. 2. 3.) becomes a step.</p>'+pSec+'</div>':'')+
+        '<div style="font-weight:700;font-size:12px;color:#777;margin-bottom:8px;text-transform:uppercase;letter-spacing:.03em">Steps ('+tr.steps.length+')</div>'+
+        sRows+
+        (ROLE==="pe"?'<button onclick="engAddStep('+ti+')" style="width:100%;padding:9px;font-size:12px;background:rgba(24,95,165,.06);border:1.5px dashed rgba(24,95,165,.25);border-radius:9px;font-weight:700;color:#185FA5;cursor:pointer;margin-top:9px;font-family:inherit">+ Add step manually</button>':'')+
+      '</div>';
+    }
+    return '<div class="ti'+(isO?" open":"")+'">'+
+      '<div class="fx" onclick="engOpenTrans('+ti+')" style="cursor:pointer">'+
+      '<div class="ti-arrow">'+(isO?"&#9660;":"&#9654;")+'</div>'+
+      '<div style="flex:1"><div class="fx">'+
+        '<span class="mon" style="font-size:14px;font-weight:900">'+h(tr.from)+'</span>'+
+        '<span style="color:#ccc;font-size:18px;padding:0 4px">&#8594;</span>'+
+        '<span class="mon" style="font-size:14px;font-weight:900;color:#185FA5">'+h(tr.to)+'</span>'+
+        '<span style="font-size:11px;background:rgba(0,0,0,.05);color:#777;padding:2px 7px;border-radius:5px">'+h(tr.type)+'</span>'+
+        '<span style="font-size:11px;background:'+(tr.status==="Approved"?"rgba(59,109,17,.1)":"rgba(250,238,218,.8)")+';color:'+(tr.status==="Approved"?"#3B6D11":"#854F0B")+';padding:2px 8px;border-radius:5px;font-weight:700">'+h(tr.ver)+' '+h(tr.status)+'</span>'+
+      '</div><div style="font-size:11px;color:#9b9b97;margin-top:3px">'+tr.steps.length+' steps | MFR '+tr.mfrLo+'-'+tr.mfrHi+' | XS '+tr.xsLo+'-'+tr.xsHi+'%'+(tr.c2Lo?' | C2 '+tr.c2Lo+'-'+tr.c2Hi+'%':'')+'</div></div></div>'+body+'</div>';
+  }).join("");
+  document.getElementById("eng").innerHTML='<div class="card">'+
+    '<div class="fx" style="justify-content:space-between;margin-bottom:13px">'+
+    '<div class="ct" style="margin:0">Grade Change Instructions ('+TRANS.length+')</div>'+
+    (ROLE==="pe"?'<button class="bb" onclick="ENG_SHOW_NEW=true;renderEng()">+ New instruction</button>':'')+
+    '</div>'+
+    newF+icons+'</div>';
+}
+
+
+/* ===== SUPERVISOR - minimal ===== */
+function eSup(){document.getElementById("supd").classList.add("hidden");document.getElementById("supe").classList.remove("hidden");}
+function sSup(){SUP=document.getElementById("sup-in").value;}
+
+/* ===== WORKBOOKS ===== */
+function wbTogSec(wi,sid){var k=wi+","+sid;WB_OPEN[k]=!WB_OPEN[k];WB_EDIT=null;WB_NEW_ROW=null;renderWB();}
+function wbEditRow(wi,sid,ri){WB_EDIT={wi:wi,sid:sid,ri:ri};renderWB();}
+function wbSaveRow(wi,sid,ri){
+  var p=document.getElementById("er-p").value.trim();if(!p){alert("Parameter name required.");return;}
+  WB[wi].secs.find(function(s){return s.id===sid;}).rows[ri]={p:p,u:document.getElementById("er-u").value,mn:document.getElementById("er-mn").value||"-",tg:document.getElementById("er-tg").value||"-",mx:document.getElementById("er-mx").value||"-",m:document.getElementById("er-m").value};
+  WB_EDIT=null;syncIfPE();renderWB();
+}
+function wbDelRow(wi,sid,ri){if(!confirm("Delete row?"))return;WB[wi].secs.find(function(s){return s.id===sid;}).rows.splice(ri,1);WB_EDIT=null;renderWB();}
+function wbNewRow(wi,sid){WB_NEW_ROW={wi:wi,sid:sid};WB_EDIT=null;renderWB();}
+function wbAddRow(wi,sid){
+  var p=document.getElementById("nr-p").value.trim();if(!p){alert("Parameter name required.");return;}
+  WB[wi].secs.find(function(s){return s.id===sid;}).rows.push({p:p,u:document.getElementById("nr-u").value,mn:document.getElementById("nr-mn").value||"-",tg:document.getElementById("nr-tg").value||"-",mx:document.getElementById("nr-mx").value||"-",m:document.getElementById("nr-m").value});
+  WB_NEW_ROW=null;renderWB();
+}
+function wbDel(wi){if(!confirm("Delete this working book?"))return;WB.splice(wi,1);renderWB();}
+function wbCreate(){
+  var grd=document.getElementById("nwb-g").value.trim();if(!grd){alert("Grade code required.");return;}
+  WB.push({grade:grd,family:document.getElementById("nwb-f").value,rev:"v1.0",status:"Draft",
+    doc:document.getElementById("nwb-d").value||"",description:document.getElementById("nwb-desc").value||"",
+    application:document.getElementById("nwb-app").value||"",market:document.getElementById("nwb-mkt").value||"",
+    features:document.getElementById("nwb-feat").value||"",catalyst:document.getElementById("nwb-cat").value||"",
+    cocatalyst:"",donor:"",
+    secs:[{id:"ps",title:"Product Specification",color:"#185FA5",rows:[]},{id:"isp",title:"Internal Spec - Powder",color:"#534AB7",rows:[]},
+      {id:"ise",title:"Internal Spec - Pellets",color:"#3B6D11",rows:[]},
+      {id:"oc",title:"Operating Conditions",color:"#854F0B",rows:[
+        {p:"T in R-2201",u:"C",mn:"-",tg:"",mx:"-",m:""},
+        {p:"T in R-2202",u:"C",mn:"-",tg:"",mx:"-",m:""},
+        {p:"Density in R-2201",u:"kg/m3",mn:"",tg:"",mx:"",m:""},
+        {p:"Density in R-2202",u:"kg/m3",mn:"",tg:"",mx:"",m:""},
+        {p:"H2 to R-2201",u:"ppm vol",mn:"",tg:"",mx:"",m:""},
+        {p:"H2 to R-2202",u:"ppm vol",mn:"",tg:"",mx:"",m:""},
+        {p:"MFR R-2201 limits",u:"g/10 min",mn:"",tg:"",mx:"",m:""},
+        {p:"MFR R-2202 target",u:"g/10 min",mn:"-",tg:"",mx:"-",m:""},
+        {p:"Split R-2201",u:"wt%",mn:"-",tg:"",mx:"-",m:""},
+        {p:"TEAL/Propylene ratio",u:"g/kg",mn:"",tg:"",mx:"",m:""},
+        {p:"T/D ratio",u:"wt",mn:"",tg:"",mx:"",m:""},
+        {p:"XS range",u:"wt%",mn:"",tg:"",mx:"",m:""}
+      ]},
+      {id:"ex",title:"Extrusion Conditions",color:"#993C1D",rows:[
+        {p:"Throughput",u:"t/hr",mn:"",tg:"",mx:"",m:""},
+        {p:"A.O. 1010",u:"ppm",mn:"-",tg:"",mx:"",m:""},
+        {p:"Irgafos 168",u:"ppm",mn:"-",tg:"",mx:"",m:""},
+        {p:"DHT-4A",u:"ppm",mn:"-",tg:"",mx:"",m:""},
+        {p:"CBA",u:"ppm",mn:"-",tg:"",mx:"",m:""},
+        {p:"Temp C2",u:"C",mn:"-",tg:"",mx:"",m:""},
+        {p:"Temp C3-C4",u:"C",mn:"",tg:"",mx:"",m:""},
+        {p:"Temp C5-C7",u:"C",mn:"",tg:"",mx:"",m:""}
+      ]}]
+  });WB_SHOW_NEW=false;renderWB();
+}
+
+function renderWB(){
+  var newF="";
+  if(WB_SHOW_NEW&&ROLE==="pe"){
+    newF='<div class="nt-form" style="margin-bottom:14px">'+
+      '<div style="font-weight:800;font-size:14px;margin-bottom:13px">Add New Grade Working Book</div>'+
+      '<div class="g3"><div class="fld"><label>Grade code *</label><input id="nwb-g" placeholder="CA0900BM"></div>'+
+      '<div class="fld"><label>Family</label><select id="nwb-f"><option>HOMO</option><option>RACO</option><option>HECO</option></select></div>'+
+      '<div class="fld"><label>Document number</label><input id="nwb-d" placeholder="SP-003-PK-001-06"></div></div>'+
+      '<div class="fld" style="margin-bottom:8px"><label>Description</label><textarea id="nwb-desc" rows="2" placeholder="Brief description"></textarea></div>'+
+      '<div class="g2"><div class="fld"><label>Application</label><input id="nwb-app" placeholder="Raffia, Film"></div>'+
+      '<div class="fld"><label>Market</label><input id="nwb-mkt" placeholder="Textile, Packaging"></div>'+
+      '<div class="fld"><label>Catalyst</label><input id="nwb-cat" placeholder="ZN 180 2M"></div>'+
+      '<div class="fld"><label>Features</label><input id="nwb-feat" placeholder="Non-Phthalate"></div></div>'+
+      '<div class="fx"><button class="bg" onclick="wbCreate()">Create</button><button class="bx" onclick="WB_SHOW_NEW=false;renderWB()">Cancel</button></div></div>';
+  }
+  var cards=WB.map(function(wb,wi){
+    /* Auto-open first section if none open */
+    var anyOpen=wb.secs.some(function(s){return WB_OPEN[wi+","+s.id];});
+    if(!anyOpen&&wb.secs.length>0){WB_OPEN[wi+","+wb.secs[0].id]=true;}
+    var secH=wb.secs.map(function(sec){
+      var isO=WB_OPEN[wi+","+sec.id];var rowH="";
+      if(isO){
+        rowH='<div style="overflow-x:auto;margin-top:8px"><table class="wb-tbl"><thead><tr>'+
+          '<th>Parameter</th><th style="text-align:center">Unit</th><th style="text-align:center">Min</th>'+
+          '<th style="text-align:center">Target</th><th style="text-align:center">Max</th><th>Method</th>'+
+          (ROLE==="pe"?'<th></th>':'')+
+          '</tr></thead><tbody>';
+        sec.rows.forEach(function(row,ri){
+          var isEd=WB_EDIT&&WB_EDIT.wi===wi&&WB_EDIT.sid===sec.id&&WB_EDIT.ri===ri;
+          if(isEd&&ROLE==="pe"){
+            rowH+='<tr style="background:rgba(192,221,151,.15)">'+
+              '<td><input id="er-p" value="'+h(row.p)+'" style="width:100%;border:1px solid rgba(0,0,0,.13);border-radius:5px;padding:3px 6px;font-size:11px;font-family:inherit"></td>'+
+              '<td><input id="er-u" value="'+h(row.u)+'" style="width:58px;border:1px solid rgba(0,0,0,.13);border-radius:5px;padding:3px 5px;font-size:11px;font-family:inherit;text-align:center"></td>'+
+              '<td><input id="er-mn" value="'+h(row.mn)+'" style="width:50px;border:1px solid rgba(0,0,0,.13);border-radius:5px;padding:3px 5px;font-size:11px;font-family:inherit;text-align:center"></td>'+
+              '<td><input id="er-tg" value="'+h(row.tg)+'" style="width:50px;border:1px solid rgba(0,0,0,.13);border-radius:5px;padding:3px 5px;font-size:11px;font-family:inherit;text-align:center"></td>'+
+              '<td><input id="er-mx" value="'+h(row.mx)+'" style="width:50px;border:1px solid rgba(0,0,0,.13);border-radius:5px;padding:3px 5px;font-size:11px;font-family:inherit;text-align:center"></td>'+
+              '<td><input id="er-m" value="'+h(row.m)+'" style="width:85px;border:1px solid rgba(0,0,0,.13);border-radius:5px;padding:3px 5px;font-size:11px;font-family:inherit"></td>'+
+              '<td style="white-space:nowrap"><button onclick="wbSaveRow('+wi+',\''+sec.id+'\','+ri+')" style="font-size:10px;padding:2px 7px;background:#3B6D11;color:#fff;border:none;border-radius:5px;cursor:pointer;font-family:inherit;margin-right:3px">Save</button>'+
+              '<button onclick="WB_EDIT=null;renderWB()" style="font-size:10px;padding:2px 7px;background:rgba(0,0,0,.06);color:#555;border:1px solid rgba(0,0,0,.12);border-radius:5px;cursor:pointer;font-family:inherit">X</button></td></tr>';
+          }else{
+            rowH+='<tr><td style="font-weight:500;color:#1a1a18">'+h(row.p)+'</td>'+
+              '<td style="color:#555;font-size:11px;text-align:center">'+h(row.u)+'</td>'+
+              '<td style="text-align:center;color:'+(row.mn&&row.mn!=="-"?"#185FA5":"#bbb")+'">'+h(row.mn)+'</td>'+
+              '<td style="text-align:center;font-weight:700;color:'+(row.tg&&row.tg!=="-"?"#3B6D11":"#bbb")+'">'+h(row.tg)+'</td>'+
+              '<td style="text-align:center;color:'+(row.mx&&row.mx!=="-"?"#185FA5":"#bbb")+'">'+h(row.mx)+'</td>'+
+              '<td style="font-size:11px;color:#9b9b97">'+h(row.m)+'</td>'+
+              (ROLE==="pe"?'<td style="white-space:nowrap"><button onclick="wbEditRow('+wi+',\''+sec.id+'\','+ri+')" class="bedit" style="margin-right:3px;font-size:10px;padding:2px 7px">Edit</button>'+
+              '<button onclick="wbDelRow('+wi+',\''+sec.id+'\','+ri+')" class="bdel" style="font-size:10px;padding:2px 7px">Del</button></td>':'')+
+            '</tr>';
+          }
+        });
+        var isNR=WB_NEW_ROW&&WB_NEW_ROW.wi===wi&&WB_NEW_ROW.sid===sec.id;
+        if(isNR&&ROLE==="pe"){
+          rowH+='<tr style="background:rgba(192,221,151,.12)">'+
+            '<td><input id="nr-p" placeholder="Parameter name" style="width:100%;border:1px solid rgba(0,0,0,.13);border-radius:5px;padding:3px 6px;font-size:11px;font-family:inherit"></td>'+
+            '<td><input id="nr-u" placeholder="unit" style="width:58px;border:1px solid rgba(0,0,0,.13);border-radius:5px;padding:3px 5px;font-size:11px;font-family:inherit;text-align:center"></td>'+
+            '<td><input id="nr-mn" placeholder="-" style="width:50px;border:1px solid rgba(0,0,0,.13);border-radius:5px;padding:3px 5px;font-size:11px;font-family:inherit;text-align:center"></td>'+
+            '<td><input id="nr-tg" placeholder="-" style="width:50px;border:1px solid rgba(0,0,0,.13);border-radius:5px;padding:3px 5px;font-size:11px;font-family:inherit;text-align:center"></td>'+
+            '<td><input id="nr-mx" placeholder="-" style="width:50px;border:1px solid rgba(0,0,0,.13);border-radius:5px;padding:3px 5px;font-size:11px;font-family:inherit;text-align:center"></td>'+
+            '<td><input id="nr-m" placeholder="method" style="width:85px;border:1px solid rgba(0,0,0,.13);border-radius:5px;padding:3px 5px;font-size:11px;font-family:inherit"></td>'+
+            '<td style="white-space:nowrap"><button onclick="wbAddRow('+wi+',\''+sec.id+'\')" style="font-size:10px;padding:2px 7px;background:#3B6D11;color:#fff;border:none;border-radius:5px;cursor:pointer;font-family:inherit;margin-right:3px">Add</button>'+
+            '<button onclick="WB_NEW_ROW=null;renderWB()" style="font-size:10px;padding:2px 7px;background:rgba(0,0,0,.06);color:#555;border:1px solid rgba(0,0,0,.12);border-radius:5px;cursor:pointer;font-family:inherit">X</button></td></tr>';
+        }
+        rowH+='</tbody></table></div>';
+        if(ROLE==="pe")rowH+='<button onclick="wbNewRow('+wi+',\''+sec.id+'\')" style="margin-top:8px;font-size:11px;padding:5px 12px;background:rgba(24,95,165,.07);border:1px dashed rgba(24,95,165,.28);border-radius:7px;color:#185FA5;cursor:pointer;font-family:inherit;font-weight:600">+ Add row</button>';
+      }
+      return '<div class="wb-sec"><div class="wb-sec-hdr" onclick="wbTogSec('+wi+',\''+sec.id+'\')">'+
+        '<div style="width:12px;height:12px;border-radius:3px;background:'+h(sec.color)+';flex-shrink:0"></div>'+
+        '<span style="font-weight:700;font-size:13px;flex:1">'+h(sec.title)+'</span>'+
+        '<span style="font-size:11px;color:#9b9b97">('+sec.rows.length+')</span>'+
+        '<span style="font-size:11px;font-weight:900;color:'+(isO?"#185FA5":"#bbb")+'">'+(isO?"&#9660;":"&#9654;")+'</span>'+
+        '</div>'+(isO?'<div style="padding:8px 14px 12px">'+rowH+'</div>':"")+
+      '</div>';
+    }).join("");
+    return '<div class="card" style="margin-bottom:14px">'+
+      '<div class="fx" style="margin-bottom:11px;justify-content:space-between;flex-wrap:wrap;gap:8px">'+
+      '<div><div class="fx" style="margin-bottom:3px">'+
+        '<span class="mon" style="font-size:20px;font-weight:900;color:#185FA5">'+h(wb.grade)+'</span>'+
+        '<span style="font-size:11px;background:rgba(24,95,165,.1);color:#185FA5;padding:2px 8px;border-radius:5px;font-weight:700;border:1px solid rgba(24,95,165,.2)">'+h(wb.family)+'</span>'+
+        '<span style="font-size:11px;background:rgba(59,109,17,.1);color:#3B6D11;padding:2px 8px;border-radius:5px;font-weight:700;border:1px solid rgba(59,109,17,.2)">'+h(wb.status)+'</span>'+
+      '</div><div style="font-size:11px;color:#777">'+h(wb.doc)+' | '+h(wb.rev)+'</div></div>'+
+      (ROLE==="pe"?'<div class="fx"><button onclick="wbDel('+wi+')" class="bdel">Delete WB</button></div>':'')+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:11px;padding:10px 12px;background:rgba(0,0,0,.03);border-radius:8px;font-size:12px">'+
+        '<div><span style="color:#999;font-size:10px;text-transform:uppercase;letter-spacing:.04em">Application</span><br><b>'+h(wb.application)+'</b></div>'+
+        '<div><span style="color:#999;font-size:10px;text-transform:uppercase;letter-spacing:.04em">Market</span><br><b>'+h(wb.market)+'</b></div>'+
+        '<div><span style="color:#999;font-size:10px;text-transform:uppercase;letter-spacing:.04em">Catalyst</span><br><b>'+h(wb.catalyst)+(wb.cocatalyst?' / '+wb.cocatalyst:'')+(wb.donor?' / '+wb.donor:'')+'</b></div>'+
+        '<div><span style="color:#999;font-size:10px;text-transform:uppercase;letter-spacing:.04em">Features</span><br><b>'+h(wb.features)+'</b></div>'+
+      '</div>'+
+      '<div style="font-size:12px;color:#555;margin-bottom:12px;line-height:1.6">'+h(wb.description)+'</div>'+
+      '<div style="font-weight:700;font-size:12px;color:#777;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Specifications</div>'+secH+'</div>';
+  }).join("");
+  document.getElementById("wb").innerHTML='<div class="card">'+
+    '<div class="fx" style="justify-content:space-between;margin-bottom:13px">'+
+    '<div class="ct" style="margin:0">Grade Working Books ('+WB.length+')</div>'+
+    (ROLE==="pe"?'<button class="bb" onclick="WB_SHOW_NEW=true;renderWB()">+ Add working book</button>':'')+
+    '</div>'+newF+'</div>'+cards;
+}
+
+/* ===== PDF / SHARE ===== */
+function buildTextReport(){
+  var tr=getTR();var sts=getST(ATID);var smp=SMP[ATID]||[];
+  var done=sts.filter(function(s){return s==="c";}).length;
+  var lines=["PP PLANT - GRADE CHANGE REPORT","================================",
+    "Transition: "+tr.from+" to "+tr.to+" ("+tr.type+")","Version: "+tr.ver+" | Status: "+tr.status,
+    "Operator: "+OP,"Progress: "+done+"/"+sts.length+" steps",""];
+  lines.push("STEPS:","------");
+  tr.steps.forEach(function(step,i){
+    var st=sts[i]||"p";var cd=(CDR[ATID]||{})[i];
+    var stl=st==="c"?"[DONE]":st==="a"?"[ACTIVE]":"[PENDING]";
+    lines.push(stl+" Step "+(i+1)+": "+step.title);
+    if(cd)lines.push("  Confirmed "+cd.time+" by "+cd.operator+(cd.notes?" - "+cd.notes:""));
+  });
+  if(smp.length){lines.push("","LAB RESULTS:","------------");
+    smp.forEach(function(r){lines.push("  "+r.time+" | "+(r.stype||"Pellet")+" | MFR: "+(r.mfr||"-")+" | XS: "+(r.xs||"-")+(r.c2?" | C2: "+r.c2:"")+(r.notes?" | "+r.notes:""));});
+  }
+  lines.push("","Generated: "+new Date().toLocaleString("en-GB",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}));
+  return lines.join("\n");
+}
+function doPDF(){
+  var pages=document.querySelectorAll(".page");var hidden=[];
+  pages.forEach(function(p){if(!p.classList.contains("on")){hidden.push(p);p.classList.add("on");}});
+  window.print();
+  setTimeout(function(){hidden.forEach(function(p){p.classList.remove("on");});},1000);
+}
+function closeShareModal(){var d=document.getElementById("share-modal");if(d)d.remove();}
+function copyReport(){
+  var ta=document.getElementById("report-text");if(!ta)return;
+  if(navigator.clipboard){navigator.clipboard.writeText(ta.value).then(function(){showToast("Copied!");});}
+  else{ta.select();document.execCommand("copy");showToast("Copied!");}
+}
+function emailReport(){
+  var tr=getTR();var sub=encodeURIComponent("Grade Change Report: "+tr.from+" to "+tr.to);
+  var ta=document.getElementById("report-text");
+  window.open("mailto:?subject="+sub+"&body="+encodeURIComponent(ta?ta.value:buildTextReport()));
+}
+function whatsappReport(){window.open("https://wa.me/?text="+encodeURIComponent(buildTextReport()));}
+function showToast(msg){
+  var t=document.getElementById("toast");
+  if(!t){t=document.createElement("div");t.id="toast";t.style.cssText="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a18;color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;transition:opacity .3s";document.body.appendChild(t);}
+  t.textContent=msg;t.style.opacity="1";clearTimeout(t._to);t._to=setTimeout(function(){t.style.opacity="0";},2000);
+}
+function doShare(){
+  var text=buildTextReport();var tr=getTR();var title="Grade Change: "+tr.from+" to "+tr.to;
+  if(navigator.share){navigator.share({title:title,text:text}).catch(function(){});return;}
+  var d=document.getElementById("share-modal");
+  if(!d){d=document.createElement("div");d.id="share-modal";d.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:999;display:flex;align-items:flex-end;justify-content:center";d.onclick=function(e){if(e.target===d)d.remove();};document.body.appendChild(d);}
+  d.innerHTML='<div style="background:#fff;border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:600px;max-height:80vh;overflow:auto">'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'+
+      '<span style="font-weight:800;font-size:16px">Share Report</span>'+
+      '<button onclick="closeShareModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#777">&times;</button>'+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">'+
+      '<button onclick="copyReport()" style="padding:14px;background:rgba(24,95,165,.1);color:#185FA5;border:1px solid rgba(24,95,165,.25);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">&#128203; Copy text</button>'+
+      '<button onclick="emailReport()" style="padding:14px;background:rgba(59,109,17,.1);color:#3B6D11;border:1px solid rgba(59,109,17,.25);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">&#9993; Send email</button>'+
+      '<button onclick="doPDF()" style="padding:14px;background:rgba(250,238,218,.9);color:#854F0B;border:1px solid rgba(250,199,117,.5);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">&#128247; Print / PDF</button>'+
+      '<button onclick="whatsappReport()" style="padding:14px;background:rgba(37,211,102,.1);color:#128C7E;border:1px solid rgba(37,211,102,.3);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">&#128172; WhatsApp</button>'+
+    '</div>'+
+    '<div style="font-size:11px;color:#777;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">Report preview</div>'+
+    '<textarea id="report-text" readonly style="width:100%;height:160px;border:1px solid rgba(0,0,0,.12);border-radius:8px;padding:10px;font-size:11px;font-family:monospace;background:#f8f8f8;resize:none">'+buildTextReport()+'</textarea>'+
+  '</div>';
+}
+
+function closeSyncModal(){var d=document.getElementById("sync-setup-modal");if(d)d.remove();}
+function showSyncSetup(){
+  var d=document.getElementById("sync-setup-modal");
+  if(!d){d=document.createElement("div");d.id="sync-setup-modal";d.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px";d.onclick=function(e){if(e.target===d)d.remove();};document.body.appendChild(d);}
+  d.innerHTML='<div style="background:#fff;border-radius:16px;padding:24px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto">'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'+
+      '<span style="font-weight:800;font-size:16px">Real-Time Sync Setup</span>'+
+      '<button onclick="closeSyncModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#777">&times;</button>'+
+    '</div>'+
+    '<div style="background:rgba(24,95,165,.06);border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px;line-height:1.7;color:#333">'+
+      '<b>How it works:</b> Process Engineer saves changes → all tablets update automatically within seconds via Firebase.<br><br>'+
+      '<b>One-time setup (5 min):</b><br>'+
+      '1. Go to <b>console.firebase.google.com</b><br>'+
+      '2. Create project → Add Web App<br>'+
+      '3. Enable <b>Realtime Database</b> (Start in test mode)<br>'+
+      '4. Copy databaseURL and apiKey<br>'+
+      '5. Paste below → Connect'+
+    '</div>'+
+    (ROLE==="pe"?
+      '<div style="margin-bottom:8px"><label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:3px">Database URL *</label>'+
+      '<input id="sc-url" placeholder="https://your-project-default-rtdb.firebaseio.com" value="'+FIREBASE_CONFIG.databaseURL+'" style="width:100%;border:1px solid rgba(0,0,0,.13);border-radius:7px;padding:7px 9px;font-size:12px;font-family:monospace"></div>'+
+      '<div style="margin-bottom:8px"><label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:3px">API Key</label>'+
+      '<input id="sc-key" placeholder="AIzaSy..." value="'+FIREBASE_CONFIG.apiKey+'" style="width:100%;border:1px solid rgba(0,0,0,.13);border-radius:7px;padding:7px 9px;font-size:12px;font-family:monospace"></div>'+
+      '<div style="margin-bottom:12px"><label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:3px">Plant/Site ID (same on all devices)</label>'+
+      '<input id="sc-plant" value="'+SYNC_PLANT+'" style="width:100%;border:1px solid rgba(0,0,0,.13);border-radius:7px;padding:7px 9px;font-size:12px;font-family:monospace"></div>'+
+      '<button onclick="applySyncConfig()" style="width:100%;padding:11px;background:linear-gradient(135deg,#185FA5,#2b7fc4);color:#fff;border:none;border-radius:9px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit">Connect &amp; Enable Sync</button>':
+      '<div style="background:rgba(250,238,218,.9);border-radius:8px;padding:12px;font-size:13px;color:#854F0B">Only Process Engineer can configure sync settings.</div>'
+    )+'</div>';
+}
+
+function applySyncConfig(){
+  var url=document.getElementById("sc-url").value.trim();
+  var key=document.getElementById("sc-key").value.trim();
+  var plant=(document.getElementById("sc-plant")||{}).value||"pp-plant-1";
+  if(!url){alert("Database URL is required.");return;}
+  FIREBASE_CONFIG.databaseURL=url;
+  FIREBASE_CONFIG.apiKey=key;
+  SYNC_PLANT=plant;
+  try{localStorage.setItem("gc_sync_url",url);localStorage.setItem("gc_sync_key",key);localStorage.setItem("gc_sync_plant",plant);}catch(e){}
+  if(SYNC_REF)SYNC_REF.off();
+  try{firebase.apps.forEach(function(a){try{a.delete();}catch(e){}});}catch(e){}
+  DB=null;SYNC_REF=null;
+  document.getElementById("sync-setup-modal").remove();
+  initFirebase();
+}
+
+/* Load saved config */
+try{
+  var su=localStorage.getItem("gc_sync_url"),sk=localStorage.getItem("gc_sync_key"),sp=localStorage.getItem("gc_sync_plant");
+  if(su){FIREBASE_CONFIG.databaseURL=su;}
+  if(sk){FIREBASE_CONFIG.apiKey=sk;}
+  if(sp){SYNC_PLANT=sp;}
+}catch(e){}
+
+initFirebase();
+renderOp();
+
+</script>
+</body>
+</html>
